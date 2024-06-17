@@ -1,5 +1,6 @@
 import { createRouter, createWebHistory } from "vue-router"
 import BlankPage from "@/views/BlankPage.vue"
+import vueFormEditor from "@/views/vueFormEditor/index.vue"
 import { Layout } from "@/types/theme.d"
 import { authCheck } from "@/utils/auth"
 import type { FormType } from "@/components/AuthForm/index.vue"
@@ -10,8 +11,8 @@ const router = createRouter({
 		{
 			path: "/",
 			name: "BlankPage",
-			component: BlankPage,
-			meta: { title: "Blank page", auth: true, roles: "all" }
+			component: vueFormEditor,
+			meta: { title: "Blank page", auth: true, roles: "all" , forceLayout: Layout.Blank}
 		},
 		{
 			path: "/profile",

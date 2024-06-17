@@ -1,16 +1,18 @@
 <template>
-	<div class="main">
-		<n-scrollbar ref="scrollbar">
-			<div class="view" :class="[{ boxed }, `route-${routeName}`]">
-				<slot></slot>
-			</div>
-		</n-scrollbar>
+	<div class="main p-4">
+		<n-modal-provider>
+			<n-scrollbar ref="scrollbar">
+				<div class="view" :class="[{ boxed }, `route-${routeName}`]">
+					<slot></slot>
+				</div>
+			</n-scrollbar>
+		</n-modal-provider>
 	</div>
 </template>
 
 <script lang="ts" setup>
 import { computed, ref, onMounted } from "vue"
-import { NScrollbar } from "naive-ui"
+import { NScrollbar,NModalProvider } from "naive-ui"
 import { useRoute, useRouter } from "vue-router"
 import { useThemeStore } from "@/stores/theme"
 

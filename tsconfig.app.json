@@ -1,12 +1,12 @@
 {
 	"extends": "@vue/tsconfig/tsconfig.dom.json",
-	"include": ["src/**/*.d.ts", "src/**/*.ts", "src/**/*.tsx", "src/**/*.vue", "src/**/*.json", "src/**/*.js"],
+	"include": ["src/**/*.d.ts", "src/**/*.ts", "src/**/*.tsx", "src/**/*.vue", "src/**/*.json", "src/**/*.js", "node_modules/vue3-ts-jsoneditor/dist/*.d.ts",],
 	"exclude": ["src/**/__tests__/*"],
 	"compilerOptions": {
 		"composite": true,
 		"baseUrl": ".",
 		"types": ["node", "naive-ui/volar"],
-		"moduleResolution": "node",
+		"moduleResolution": "Bundler",
 		"isolatedModules": true,
 		"allowJs": true,
 		"noEmit": true,
