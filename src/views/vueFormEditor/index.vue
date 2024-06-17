@@ -8,7 +8,7 @@
 				<template #header-extra>
 					<NButton type="success" @click="setExampleJsonData">Example Data</NButton>
 				</template>
-				<Vueform v-bind="jsonData" />
+				<Vueform v-bind="dataForm" />
 			</n-card>
 		</div>
 		<div class="col-span-1">
@@ -16,7 +16,13 @@
 				<template #header-extra>
 					<NButton type="success" @click="isDownloadJson = true">Export Json</NButton>
 				</template>
-				<json-editor height="400" mode="tree" :queryLanguagesIds="queryLanguages" v-model="jsonData" />
+				<json-editor
+					height="400"
+					mode="tree"
+					:queryLanguagesIds="queryLanguages"
+					v-model="jsonData"
+					@change-mode="changeMode"
+				/>
 				<n-modal v-model:show="isDownloadJson">
 					<n-card
 						style="width: 400px"
@@ -41,7 +47,7 @@
 </template>
 
 <script lang="ts">
-import { ref, watch, onMounted } from "vue"
+import { ref, computed } from "vue"
 import JsonEditor from "vue3-ts-jsoneditor"
 import { NCard, NButton, NModal, NInput, NFlex } from "naive-ui"
 import moment from "moment"
@@ -2546,7 +2552,12 @@ export default {
 		function changeMode(mode: "tree" | "text" | "table") {
 			selection.value = mode
 		}
-
+		const dataForm = computed(() => {
+			if (selection.value === "text" && typeof jsonData.value === 'string')  {
+				return JSON.parse(jsonData.value)
+			}
+			return jsonData.value
+		})
 		//watch jsonData and save on localstorage
 		// watch(jsonData, (newVal) => {
 		// 	if (newVal) {
@@ -2564,6 +2575,7 @@ export default {
 		function onSave() {
 			localStorage.setItem("jsonData", JSON.stringify(jsonData.value))
 		}
+
 		return {
 			// Return any data or methods you want to expose to the template
 			jsonData,
@@ -2576,7 +2588,8 @@ export default {
 			setExampleJsonData,
 			selection,
 			changeMode,
-			onSave
+			onSave,
+			dataForm
 		}
 	}
 }
