@@ -2558,7 +2558,7 @@ export default {
 			selection.value = mode
 		}
 		const dataForm = computed(() => {
-			if (selection.value === "text" && typeof jsonData.value === 'string')  {
+			if (typeof jsonData.value === 'string')  {
 				return JSON.parse(jsonData.value)
 			}
 			return jsonData.value
