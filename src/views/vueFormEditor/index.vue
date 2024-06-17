@@ -1,5 +1,5 @@
 <template>
-	<div class="grid grid-cols-3 gap-4">
+	<div class="grid grid-cols-3 gap-4 ">
 		<n-flex class="col-span-3" justify="end">
 			<n-button type="success" @click="onSave">Save</n-button>
 		</n-flex>
@@ -2518,13 +2518,18 @@ export default {
 			//
 		}
 		function downloadJson(data: object, filename: string): void {
+			let blob 
+			if (selection.value === "text" && typeof data === 'string')  {
+				blob = new Blob([data], { type: "application/json" })
+			}else{
+				const jsonString = JSON.stringify(data, null, 2)
+				blob = new Blob([jsonString], { type: "application/json" })
+			}
 			//example format moment date-month-year-hour-minute-second in thai
 			const dateNow = moment().format("DD-MM-YYYY-HH-mm-ss")
 			// Step 1: Create the JSON string from the data object
-			const jsonString = JSON.stringify(data, null, 2)
 
 			// Step 2: Create a Blob from the JSON string
-			const blob = new Blob([jsonString], { type: "application/json" })
 
 			// Step 3: Create a URL for the Blob
 			const url = URL.createObjectURL(blob)
