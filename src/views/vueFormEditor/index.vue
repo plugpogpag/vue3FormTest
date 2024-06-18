@@ -1,5 +1,5 @@
 <template>
-	<div class="grid grid-cols-3 gap-4 ">
+	<div class="grid grid-cols-3 gap-4">
 		<n-flex class="col-span-3" justify="end">
 			<n-button type="success" @click="onSave">Save</n-button>
 		</n-flex>
@@ -2518,10 +2518,10 @@ export default {
 			//
 		}
 		function downloadJson(data: object, filename: string): void {
-			let blob 
-			if (selection.value === "text" && typeof data === 'string')  {
+			let blob
+			if (selection.value === "text" && typeof data === "string") {
 				blob = new Blob([data], { type: "application/json" })
-			}else{
+			} else {
 				const jsonString = JSON.stringify(data, null, 2)
 				blob = new Blob([jsonString], { type: "application/json" })
 			}
@@ -2558,22 +2558,19 @@ export default {
 			selection.value = mode
 		}
 		const dataForm = computed(() => {
+			console.log(jsonData.value)
 			if (!jsonData.value) {
 				return {}
 			}
-			if (typeof jsonData.value === 'string')  {
-				return JSON.parse(jsonData.value)
+			if (typeof jsonData.value === "string") {
+				try {
+					return JSON.parse(jsonData.value)
+				} catch (error) {
+					return {}
+				}
 			}
 			return jsonData.value
 		})
-		//watch jsonData and save on localstorage
-		// watch(jsonData, (newVal) => {
-		// 	if (newVal) {
-		// 		localStorage.setItem("jsonData", JSON.stringify(newVal))
-		// 	}
-		// },{ deep: true , immediate: true})
-		//onmount get data from localstorage to jsonData
-		// onMounted(() => {
 		const data = localStorage.getItem("jsonData")
 		if (data) {
 			jsonData.value = JSON.parse(data)
