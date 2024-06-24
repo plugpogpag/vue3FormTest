@@ -47,7 +47,7 @@
 </template>
 
 <script lang="ts">
-import { ref, computed } from "vue"
+import { ref, computed, provide } from "vue"
 import JsonEditor from "vue3-ts-jsoneditor"
 import { NCard, NButton, NModal, NInput, NFlex } from "naive-ui"
 import moment from "moment"
@@ -2580,7 +2580,27 @@ export default {
 		function onSave() {
 			localStorage.setItem("jsonData", JSON.stringify(jsonData.value))
 		}
+		function dotNotationToArray(path: string): string[] {
+			return path.split(".")
+		}
+		function updateLabel(obj: any, path: string[], newLabel: string): void {
+			let current: any = obj
+			for (let i = 0; i < path.length - 1; i++) {
+				current = current.schema[path[i]]
+			}
+			if (current && current.schema && current.schema[path[path.length - 1]]) {
+				current.schema[path[path.length - 1]].label = newLabel
+			}
+		}
+		function updateLabelValue(key: string, value: string) {
+			// console.log(value)
+			const pathArray = dotNotationToArray(key)
+			updateLabel(dataForm.value, pathArray, value)
+		}
 
+		provide("label", {
+			updateLabelValue
+		})
 		return {
 			// Return any data or methods you want to expose to the template
 			jsonData,
@@ -2594,7 +2614,8 @@ export default {
 			selection,
 			changeMode,
 			onSave,
-			dataForm
+			dataForm,
+			updateLabelValue
 		}
 	}
 }
