@@ -1,7 +1,7 @@
 <template>
 	<div class="grid grid-cols-3 gap-4">
 		<n-flex class="col-span-3" justify="end">
-			<n-button type="info" @click="onLoad">Load</n-button>
+			<!-- <n-button type="info" @click="onLoad">Load</n-button> -->
 			<n-button type="success" @click="onSave">Save</n-button>
 		</n-flex>
 		<div class="col-span-2">
