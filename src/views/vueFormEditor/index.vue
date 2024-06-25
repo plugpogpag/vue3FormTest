@@ -2583,23 +2583,21 @@ export default {
 		function dotNotationToArray(path: string): string[] {
 			return path.split(".")
 		}
-		function updateLabel(obj: any, path: string[], newLabel: string): void {
+		function update(targetKey:string , obj: any, path: string[], newLabel: string): void {
 			let current: any = obj
 			for (let i = 0; i < path.length - 1; i++) {
 				current = current.schema[path[i]]
 			}
 			if (current && current.schema && current.schema[path[path.length - 1]]) {
-				current.schema[path[path.length - 1]].label = newLabel
+				current.schema[path[path.length - 1]][targetKey] = newLabel
 			}
 		}
-		function updateLabelValue(key: string, value: string) {
-			// console.log(value)
+		function updateValue(targetL:string,key: string, value: string){
 			const pathArray = dotNotationToArray(key)
-			updateLabel(dataForm.value, pathArray, value)
+			update(targetL,dataForm.value, pathArray, value)
 		}
-
-		provide("label", {
-			updateLabelValue
+		provide("update", {
+			updateValue
 		})
 		return {
 			// Return any data or methods you want to expose to the template
@@ -2615,7 +2613,6 @@ export default {
 			changeMode,
 			onSave,
 			dataForm,
-			updateLabelValue
 		}
 	}
 }

@@ -31,7 +31,7 @@
 </template>
   
 <script>
-import { ref, inject, watch, toRefs } from "vue"
+import { ref, inject } from "vue"
 import { ElementLabel } from "@vueform/vueform"
 import { ElementLabel as EditorElementTemplate } from "@vueform/vueform/dist/vueform"
 import { NInput } from "naive-ui"
@@ -46,9 +46,7 @@ export default {
 	name: "ElementLabel",
 	setup(props, context) {
 		const el$ = inject("el$")
-		const form$ = inject("form$")
-		const config$ = inject("config$")
-		const label = inject("label")
+        const update = inject("update")
 		// if (el$.value.fieldId==="label") {
 		// 	console.log({ form$: form$.value, el$: el$.value, config$: config$.value })
 		// }
@@ -59,7 +57,7 @@ export default {
         }
 		const updateLabelValue = debounce(value => {
 			labelValue.value = value
-			label.updateLabelValue(el$.value.fieldId, value)
+			update.updateValue('label',el$.value.fieldId, value)
             active.value = false
 		}, 500)
 		// function updateLabelValue(value) {
