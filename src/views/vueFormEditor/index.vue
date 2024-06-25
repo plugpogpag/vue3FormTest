@@ -1,6 +1,7 @@
 <template>
 	<div class="grid grid-cols-3 gap-4">
 		<n-flex class="col-span-3" justify="end">
+			<n-button type="info" @click="onLoad">Load</n-button>
 			<n-button type="success" @click="onSave">Save</n-button>
 		</n-flex>
 		<div class="col-span-2">
@@ -2517,6 +2518,12 @@ export default {
 			console.log(">>>>>>>>>> ", error)
 			//
 		}
+		function onLoad() {
+			const data = localStorage.getItem("jsonData")
+			if (data) {
+				jsonData.value = JSON.parse(data)
+			}
+		}
 		function downloadJson(data: object, filename: string): void {
 			let blob
 			if (selection.value === "text" && typeof data === "string") {
@@ -2571,10 +2578,9 @@ export default {
 			}
 			return jsonData.value
 		})
-		const data = localStorage.getItem("jsonData")
-		if (data) {
-			jsonData.value = JSON.parse(data)
-		}
+
+		onLoad()
+
 		// })
 
 		function onSave() {
@@ -2583,7 +2589,7 @@ export default {
 		function dotNotationToArray(path: string): string[] {
 			return path.split(".")
 		}
-		function update(targetKey:string , obj: any, path: string[], newLabel: string): void {
+		function update(targetKey: string, obj: any, path: string[], newLabel: string): void {
 			let current: any = obj
 			for (let i = 0; i < path.length - 1; i++) {
 				current = current.schema[path[i]]
@@ -2592,9 +2598,9 @@ export default {
 				current.schema[path[path.length - 1]][targetKey] = newLabel
 			}
 		}
-		function updateValue(targetL:string,key: string, value: string){
+		function updateValue(targetL: string, key: string, value: string) {
 			const pathArray = dotNotationToArray(key)
-			update(targetL,dataForm.value, pathArray, value)
+			update(targetL, dataForm.value, pathArray, value)
 		}
 		provide("update", {
 			updateValue
@@ -2613,6 +2619,7 @@ export default {
 			changeMode,
 			onSave,
 			dataForm,
+			onLoad
 		}
 	}
 }

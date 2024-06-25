@@ -24,11 +24,25 @@
 
 				<div v-else :class="classes.tag">
 					<div v-if="allowHtml">
-						<n-input v-model:value="titleValue" type="text" placeholder="Basic Input" :on-update:value="updateInput" v-if="active" />
-						<component :is="tag"  v-html="titleValue" v-bind="attrs" v-else @click="active=true"></component>
-						
+						<n-input
+							v-model:value="titleValue"
+							type="text"
+							placeholder="Basic Input"
+							:on-update:value="updateInput"
+							v-if="active"
+							ref="inputTextElement"
+							@blur="inputBlurHandle"
+							:loading="isLoading"
+						/>
+						<component
+							:is="tag"
+							v-html="titleValue"
+							v-bind="attrs"
+							v-else
+							@click="editModeElementText"
+						></component>
 					</div>
-					
+
 					<div v-else>
 						<component :is="tag" v-bind="attrs">{{ resolvedContent }}</component>
 					</div>
@@ -58,7 +72,7 @@
 </template>
 
 <script>
-import { ref,inject } from "vue"
+import { ref, inject, watch } from "vue"
 import { defineElement, StaticElement } from "@vueform/vueform"
 import { StaticElement as EditorElementTemplate } from "@vueform/vueform/dist/vueform"
 import { NInput } from "naive-ui"
@@ -68,32 +82,49 @@ export default defineElement({
 	...EditorElementTemplate, // adding data, computed, methods
 	components: {
 		...StaticElement.components,
-		NInput,
+		NInput
 	},
 	setup(props, context) {
 		const el$ = inject("el$")
 		const update = inject("update")
 		const titleValue = ref(props.content)
+		const isLoading = ref(false)
 		const element = StaticElement.setup(props, context)
 		const active = ref(false)
-		function updateInput(value){
-            titleValue.value = value
-            updateLabelValue(value)
-        }
+		const inputTextElement = ref(null)
+		function updateInput(value) {
+			titleValue.value = value
+			isLoading.value = true
+			updateLabelValue(value)
+		}
 		const updateLabelValue = debounce(value => {
 			titleValue.value = value
-			update.updateValue('content',`${el$.value.fieldId}.${props.name}`, value)
-            active.value = false
+			update.updateValue("content", `${el$.value.fieldId}.${props.name}`, value)
+			isLoading.value = false
 		}, 500)
 		const defaultClasses = ref({
 			...EditorElementTemplate.data().defaultClasses
 		})
+		function editModeElementText(e) {
+			e.preventDefault()
+			active.value = true
+		}
+		watch(inputTextElement, inputElement => {
+			if (inputElement) inputElement.focus()
+		})
+		function inputBlurHandle() {
+			active.value = false
+		}
 		return {
 			...element,
 			...defaultClasses,
 			titleValue,
 			updateInput,
-			active
+			active,
+			editModeElementText,
+			inputTextElement,
+			inputBlurHandle,
+			isLoading
 		}
 	}
 })
