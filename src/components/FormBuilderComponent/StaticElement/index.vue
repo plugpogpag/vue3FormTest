@@ -107,6 +107,7 @@ export default defineElement({
 		})
 		function editModeElementText(e) {
 			e.preventDefault()
+			titleValue.value = props.content
 			active.value = true
 		}
 		watch(inputTextElement, inputElement => {

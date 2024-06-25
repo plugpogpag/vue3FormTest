@@ -76,6 +76,7 @@ export default {
 		const inputTextElement = ref(null)
 		function editModeElementText(e) {
 			e.preventDefault()
+			labelValue.value = el$.value.label
 			active.value = true
 		}
 		watch(inputTextElement, inputElement => {
