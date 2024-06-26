@@ -244,7 +244,6 @@ async function exportTokens() {
 }
 
 async function main() {
-	console.log()
 	intro("Design tokens import/export tool")
 
 	const flowType = await select({

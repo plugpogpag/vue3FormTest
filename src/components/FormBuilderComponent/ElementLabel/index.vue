@@ -1,37 +1,29 @@
 <template>
 	<!-- If label is a component -->
-
 	<label v-if="label && isLabelComponent" :class="classes.container" :for="name" :id="id">
-		If label is a component
-		<span :class="classes.wrapper"><component v-if="isLabelComponent" :is="label" /></span>
-
+		<span :class="classes.wrapper"><component v-if="isLabelComponent" :is="labelCustom" /></span>
 		<ElementInfo><slot name="info" /></ElementInfo>
 	</label>
 
 	<!-- If label is HTML -->
-	<label v-else-if="label" :class="classes.container" :for="name" :id="id">
-		<!-- If label is HTML -->
+	<label v-else-if="labelCustom" :class="classes.container" :for="name" :id="id">
 		<n-input
-			v-model:value="labelValue"
+			v-model:value="labelCustom"
 			type="text"
 			placeholder="Basic Input"
-			:on-update:value="updateInput"
+			:on-update:value="handleValueChange"
 			v-if="active"
 			ref="inputTextElement"
 			@blur="inputBlurHandle"
 			:loading="isLoading"
 		/>
-		<span :class="classes.wrapper" v-html="label" @click="editModeElementText" v-else></span>
-
+		<span :class="classes.wrapper" v-html="labelCustom" @click="editModeElementText" v-else></span>
 		<ElementInfo><slot name="info" /></ElementInfo>
 	</label>
 
 	<!-- If label is a slot -->
 	<label v-else-if="isSlot" :class="classes.container" :for="name" :id="id">
-		If label is a slot
-		<span :class="classes.wrapper">
-			<slot />
-		</span>
+		<span :class="classes.wrapper"><slot /></span>
 		<ElementInfo><slot name="info" /></ElementInfo>
 	</label>
 
@@ -40,11 +32,11 @@
 </template>
   
 <script>
-import { ref, inject, watch } from "vue"
 import { ElementLabel } from "@vueform/vueform"
 import { ElementLabel as EditorElementTemplate } from "@vueform/vueform/dist/vueform"
 import { NInput } from "naive-ui"
 import { debounce } from "lodash"
+import {ref,watch} from "vue"
 export default {
 	...ElementLabel,
 	...EditorElementTemplate,
@@ -53,49 +45,72 @@ export default {
 		NInput
 	},
 	name: "ElementLabel",
-	setup(props, context) {
-		const el$ = inject("el$")
-		const update = inject("update")
-		const isLoading = ref(false)
-		const labelValue = ref(el$.value.label)
-		function updateInput(value) {
-			labelValue.value = value
-			isLoading.value = true
-			updateLabelValue(value)
+	inject: ["update", "el$"],
+	data() {
+		return {
+			merge: true,
+			defaultClasses: {
+				container: "",
+				wrapper: ""
+			},
+			labelCustomData: null,
+			isLoading: false,
+
+			active: false,
+			...EditorElementTemplate.data()
 		}
-		const updateLabelValue = debounce(value => {
-			labelValue.value = value
-			update.updateValue("label", el$.value.fieldId, value)
-			isLoading.value = false
-		}, 500)
-		const element = ElementLabel.setup(props, context)
-		const defaultClasses = ref({
-			...EditorElementTemplate.data().defaultClasses
-		})
-		const active = ref(false)
-		const inputTextElement = ref(null)
-		function editModeElementText(e) {
+	},
+	computed: {
+		...ElementLabel.computed,
+		...EditorElementTemplate.computed,
+		labelCustom: {
+			get() {
+				return this.labelCustomData
+			},
+			set(value) {
+				this.labelCustomData = value
+			}
+		}
+	},
+	methods: {
+		...ElementLabel.methods,
+		...EditorElementTemplate.methods,
+		delaySave: debounce(function (value) {
+			this.update.updateValue("label", this.el$.fieldId, value)
+			this.isLoading = false
+		}, 500),
+		handleValueChange(value) {
+			this.labelCustom = value
+			this.isLoading = true
+			this.delaySave(value)
+		},
+		editModeElementText(e) {
 			e.preventDefault()
-			active.value = true
+			this.active = true
+		},
+		inputBlurHandle(e) {
+			e.preventDefault()
+			this.active = false
 		}
+	},
+	watch: {
+		label: {
+			handler(val) {
+				this.labelCustomData = val
+			},
+			immediate: true,
+			deep: true
+		}
+	},
+	setup(props, context) {
+		const element = ElementLabel.setup(props, context)
+		const inputTextElement = ref(null)
 		watch(inputTextElement, inputElement => {
 			if (inputElement) inputElement.focus()
 		})
-		function inputBlurHandle() {
-			active.value = false
-		}
 		return {
-			// labelReactive:labelReactive.value,
-			updateLabelValue,
-			labelValue,
-			updateInput,
-			active,
-			editModeElementText,
 			inputTextElement,
-			inputBlurHandle,
-			isLoading,
-			...element,
-			...defaultClasses
+			...element
 		}
 	}
 }

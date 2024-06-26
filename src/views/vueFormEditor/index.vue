@@ -23,6 +23,7 @@
 					:queryLanguagesIds="queryLanguages"
 					v-model="jsonData"
 					@change-mode="changeMode"
+					:key.name="jsonData"
 				/>
 				<n-modal v-model:show="isDownloadJson">
 					<n-card
@@ -2565,7 +2566,6 @@ export default {
 			selection.value = mode
 		}
 		const dataForm = computed(() => {
-			console.log(jsonData.value)
 			if (!jsonData.value) {
 				return {}
 			}
@@ -2590,17 +2590,19 @@ export default {
 			return path.split(".")
 		}
 		function update(targetKey: string, obj: any, path: string[], newLabel: string): void {
-			let current: any = obj
-			for (let i = 0; i < path.length - 1; i++) {
-				current = current.schema[path[i]]
-			}
-			if (current && current.schema && current.schema[path[path.length - 1]]) {
-				current.schema[path[path.length - 1]][targetKey] = newLabel
+			const [firstPath, ...otherPath] = path
+			if (otherPath.length > 0) {
+				obj[firstPath].schema = update(targetKey, obj[firstPath].schema, otherPath, newLabel)
+				return obj
+			} else {
+				obj[firstPath][targetKey] = newLabel
+				return obj
 			}
 		}
 		function updateValue(targetL: string, key: string, value: string) {
 			const pathArray = dotNotationToArray(key)
-			update(targetL, dataForm.value, pathArray, value)
+			const updateDataForm = update(targetL, { ...dataForm.value.schema }, pathArray, value)
+			jsonData.value = { ...jsonData.value, schema: updateDataForm }
 		}
 		provide("update", {
 			updateValue
