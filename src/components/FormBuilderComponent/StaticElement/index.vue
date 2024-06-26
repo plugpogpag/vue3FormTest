@@ -112,6 +112,13 @@ export default defineElement({
 		watch(inputTextElement, inputElement => {
 			if (inputElement) inputElement.focus()
 		})
+		watch(
+			props,
+			() => {
+				titleValue.value = props.content
+			},
+			{ immediate: true, deep: true }
+		)
 		function inputBlurHandle() {
 			active.value = false
 		}
