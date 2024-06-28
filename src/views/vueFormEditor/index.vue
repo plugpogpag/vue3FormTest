@@ -2590,9 +2590,11 @@ export default {
 		function update(targetKey: string, obj: any, path: string[], newLabel: string): void {
 			const [firstPath, ...otherPath] = path
 			if (otherPath.length > 0) {
-				update(targetKey, obj[firstPath].schema, otherPath, newLabel)
+				obj[firstPath].schema = update(targetKey, obj[firstPath].schema, otherPath, newLabel)
+				return obj
 			} else {
 				obj[firstPath][targetKey] = newLabel
+				return obj
 			}
 		}
 		const myJsonEditor =ref(null)
