@@ -55,7 +55,6 @@ import {
   jmespathQueryLanguage,
   lodashQueryLanguage,
   javascriptQueryLanguage,
-  toJsonContent
 } from 'vanilla-jsoneditor'
  import { parse, stringify } from 'lossless-json'
 const allQueryLanguages = [jmespathQueryLanguage, lodashQueryLanguage, javascriptQueryLanguage]
