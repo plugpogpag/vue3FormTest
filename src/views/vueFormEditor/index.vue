@@ -17,14 +17,13 @@
 				<template #header-extra>
 					<NButton type="success" @click="isDownloadJson = true">Export Json</NButton>
 				</template>
-				<json-editor
-					height="400"
-					mode="tree"
-					:queryLanguagesIds="queryLanguages"
-					v-model="jsonData"
-					@change-mode="changeMode"
-					:key.name="jsonData"
-				/>
+				<JsonEditorVue 
+					v-model="jsonData" 
+					v-bind="{...jsonEditorVueProps}" 
+					:debounce="1000" class="h-[400px]" 
+					:parser="LosslessJSONParser"
+					 />
+			
 				<n-modal v-model:show="isDownloadJson">
 					<n-card
 						style="width: 400px"
@@ -50,13 +49,18 @@
 
 <script lang="ts">
 import { ref, computed, provide } from "vue"
-import JsonEditor from "vue3-ts-jsoneditor"
 import { NCard, NButton, NModal, NInput, NFlex } from "naive-ui"
 import moment from "moment"
-type QueryLanguageId = "javascript" | "lodash" | "jmespath"
+import {
+  jmespathQueryLanguage,
+  lodashQueryLanguage,
+  javascriptQueryLanguage,
+  toJsonContent
+} from 'vanilla-jsoneditor'
+ import { parse, stringify } from 'lossless-json'
+const allQueryLanguages = [jmespathQueryLanguage, lodashQueryLanguage, javascriptQueryLanguage]
 export default {
 	components: {
-		JsonEditor,
 		NCard,
 		NButton,
 		NModal,
@@ -2510,9 +2514,6 @@ export default {
 		const jsonData = ref()
 		const isDownloadJson = ref(false)
 		const nameFileJson = ref("")
-		const jsonText = ref('{"array": [1, 2, 3]}')
-
-		const queryLanguages = ref<QueryLanguageId[]>(["javascript", "lodash", "jmespath"])
 
 		// Your composition API code here
 		const onError = (error: string) => {
@@ -2525,6 +2526,7 @@ export default {
 				jsonData.value = JSON.parse(data)
 			}
 		}
+		onLoad()
 		function downloadJson(data: object, filename: string): void {
 			let blob
 			if (selection.value === "text" && typeof data === "string") {
@@ -2579,9 +2581,6 @@ export default {
 			return jsonData.value
 		})
 
-		onLoad()
-
-		// })
 
 		function onSave() {
 			localStorage.setItem("jsonData", JSON.stringify(jsonData.value))
@@ -2592,13 +2591,12 @@ export default {
 		function update(targetKey: string, obj: any, path: string[], newLabel: string): void {
 			const [firstPath, ...otherPath] = path
 			if (otherPath.length > 0) {
-				obj[firstPath].schema = update(targetKey, obj[firstPath].schema, otherPath, newLabel)
-				return obj
+				update(targetKey, obj[firstPath].schema, otherPath, newLabel)
 			} else {
 				obj[firstPath][targetKey] = newLabel
-				return obj
 			}
 		}
+		const myJsonEditor =ref(null)
 		function updateValue(targetL: string, key: string, value: string) {
 			const pathArray = dotNotationToArray(key)
 			const updateDataForm = update(targetL, { ...dataForm.value.schema }, pathArray, value)
@@ -2607,11 +2605,20 @@ export default {
 		provide("update", {
 			updateValue
 		})
+
+
+		const jsonEditorVueProps = {
+			mode: "tree",
+			queryLanguagesIds: allQueryLanguages,
+			onChangeMode:changeMode,
+			onError,
+			ref: myJsonEditor,
+		}
+		const LosslessJSONParser = { parse, stringify }
+
 		return {
 			// Return any data or methods you want to expose to the template
 			jsonData,
-			jsonText,
-			queryLanguages,
 			onError,
 			downloadJson,
 			isDownloadJson,
@@ -2621,7 +2628,11 @@ export default {
 			changeMode,
 			onSave,
 			dataForm,
-			onLoad
+			onLoad,
+			allQueryLanguages,
+			jsonEditorVueProps,
+			LosslessJSONParser,
+			myJsonEditor
 		}
 	}
 }
