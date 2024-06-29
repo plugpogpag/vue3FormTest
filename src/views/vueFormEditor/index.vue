@@ -9,7 +9,7 @@
 				<template #header-extra>
 					<NButton type="success" @click="setExampleJsonData">Example Data</NButton>
 				</template>
-				<div class="h-[80vh] overflow-scroll">
+				<div class="h-[80vh] overflow-scroll pb-6">
 					<Vueform v-bind="content.json" />
 				</div>
 				
