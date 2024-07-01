@@ -54,12 +54,10 @@ export default {
 		// this.editor.update({...contentEditor,...content})
 		this.editor.expand(true)
 		// this.editor.refresh()
-		console.log("create editor", this.editor)
 	},
   
 	updated() {
         const props= pickDefinedProps(this, propNames)
-		console.log("update props", props)
 		this.editor.updateProps(props)
         // const contentEditor= this.editor.get()
 		// this.editor.update({...contentEditor,...content})
@@ -67,7 +65,6 @@ export default {
         this.editor.refresh()
 	},
 	beforeUnmount() {
-		console.log("destroy editor")
 		this.editor.destroy()
 		this.editor = null
 	}

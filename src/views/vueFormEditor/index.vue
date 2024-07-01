@@ -1,22 +1,21 @@
 <template>
 	<div class="grid grid-cols-3 gap-4">
-		<n-flex class="col-span-3" justify="end" >
+		<n-flex class="col-span-3" justify="end">
 			<!-- <n-button type="info" @click="onLoad">Load</n-button> -->
 			<n-button type="success" @click="onSave">Save</n-button>
 		</n-flex>
-		<div class="col-span-2  " >
-			<n-card title="หน้าแสดงผล" >
+		<div class="col-span-2">
+			<n-card title="หน้าแสดงผล">
 				<template #header-extra>
 					<NButton type="success" @click="setExampleJsonData">Example Data</NButton>
 				</template>
 				<div class="h-[80vh] overflow-scroll pb-6">
-					<Vueform v-bind="content.json" />
+					<Vueform v-bind="content.json"  v-model="valueForm.json" sync @update:modelValue="updateData" />
 				</div>
-				
 			</n-card>
 		</div>
 		<div class="col-span-1 gap-4 grid">
-			<n-card title="รายการ Form" 	 >
+			<n-card title="รายการ Form">
 				<template #header-extra>
 					<NButton type="success" @click="isDownloadJson = true">Export Json</NButton>
 				</template>
@@ -24,7 +23,7 @@
 					:content="content"
 					:onChange="onChange"
 					:readOnly="readOnly"
-					class="h-[300px]" 
+					class="h-[300px]"
 					:mode="modeEditor"
 					:onChangeMode="onChangeMode"
 				/>
@@ -59,7 +58,7 @@
 					:onChange="onChangeValueForm"
 					:readOnly="readOnly"
 					:mode="modeEditor"
-					class="h-[300px]" 
+					class="h-[300px]"
 					:onChangeMode="onChangeMode"
 				/>
 
@@ -2556,7 +2555,7 @@ export default {
 			isDownloadJson: false,
 			nameFileJson: "",
 			modeEditor: "tree",
-			valueForm:{
+			valueForm: {
 				json: {},
 				text: undefined
 			}
@@ -2566,18 +2565,30 @@ export default {
 		this.loadJson()
 	},
 	methods: {
+		setNewValueUpdateDataEditor: function (value) {
+			const cloneContent = _.cloneDeep(this.valueForm)
+			const mergeContent = { ...cloneContent, json: { ...cloneContent.json, ...value } }
+			const json = mergeContent.json
+			//convert json to jsonString
+			const text = JSON.stringify(json, null, 2)
+			this.valueForm = { ...cloneContent, json, text }
+		},
+		updateData: function (formData) {
+			this.setNewValueUpdateDataEditor(formData)
+			
+		},
 		onChange: function (content) {
 			const cloneContent = _.cloneDeep(this.content)
 			let json, text
 			switch (this.modeEditor) {
 				case "tree":
-					json = content.json||undefined
+					json = content.json || undefined
 					//convert json to jsonString
 					text = JSON.stringify(json, null, 2)
 					this.content = { ...cloneContent, json, text }
 					break
 				case "text":
-					text = content.text||undefined
+					text = content.text || undefined
 					json = JSON.parse(text)
 					this.content = { ...cloneContent, json, text }
 					break
@@ -2588,20 +2599,20 @@ export default {
 			let json, text
 			switch (this.modeEditor) {
 				case "tree":
-					json = content.json ||undefined
+					json = content.json || undefined
 					//convert json to jsonString
 					text = JSON.stringify(json, null, 2)
-					this.content = { ...cloneContent, json, text }
+					this.valueForm = { ...cloneContent, json, text }
 					break
 				case "text":
-					text = content.text||undefined
+					text = content.text || undefined
 					json = JSON.parse(text)
-					this.content = { ...cloneContent, json, text }
+					this.valueForm = { ...cloneContent, json, text }
 					break
 			}
 		},
 		onChangeMode: function (mode) {
-			console.log("onChangeMode", mode)
+		
 			this.modeEditor = mode
 		},
 		dotNotationToArray: function (path) {
