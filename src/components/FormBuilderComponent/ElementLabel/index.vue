@@ -8,7 +8,7 @@
 	<!-- If label is HTML -->
 	<label v-else-if="labelCustom" :class="classes.container" :for="name" :id="id">
 		<n-input
-			v-model:value="labelCustom"
+			v-model:value="labelCustomData"
 			type="text"
 			placeholder="Basic Input"
 			:on-update:value="handleValueChange"
@@ -36,7 +36,7 @@ import { ElementLabel } from "@vueform/vueform"
 import { ElementLabel as EditorElementTemplate } from "@vueform/vueform/dist/vueform"
 import { NInput } from "naive-ui"
 import { debounce } from "lodash"
-import {ref,watch} from "vue"
+import { ref, watch } from "vue"
 export default {
 	...ElementLabel,
 	...EditorElementTemplate,
@@ -45,7 +45,7 @@ export default {
 		NInput
 	},
 	name: "ElementLabel",
-	inject: ["update", "el$"],
+	inject: ["update", "el$", "labelForm"],
 	data() {
 		return {
 			merge: true,
@@ -65,7 +65,20 @@ export default {
 		...EditorElementTemplate.computed,
 		labelCustom: {
 			get() {
-				return this.labelCustomData
+				if (!this.labelCustomData) {
+					return this.labelCustomData
+				} else {
+					const labels = this.extractLabels(this.labelCustomData)
+					if (labels.length > 0) {
+						const labelArray = labels?.map(label => {
+							if (label) {
+								return this.labelForm.LabelFormValue.value.json[`${this.el$.fieldId}.label.${label}`] || ""
+							}
+						})
+						return labelArray.join("")
+					}
+					return this.labelCustomData
+				}
 			},
 			set(value) {
 				this.labelCustomData = value
@@ -91,12 +104,34 @@ export default {
 		inputBlurHandle(e) {
 			e.preventDefault()
 			this.active = false
+		},
+		extractLabels(text) {
+			const regex = /\[\[\s*(.*?)\s*\]\]/g
+			const matches = []
+			let match
+
+			while ((match = regex.exec(text)) !== null) {
+				matches.push(match[1]) // Capture the name inside the brackets
+			}
+
+			return matches
 		}
 	},
 	watch: {
 		label: {
 			handler(val) {
 				this.labelCustomData = val
+				// if this.labelCustomData is have data and value this.labelCustomData is [[test]] or [[test]][[test2]][[test3]] show array of all bucket array
+				const labels = this.extractLabels(this.labelCustomData)
+				if (this.labelCustomData) {
+					if (labels.length > 0) {
+						labels.map(label => {
+							this.labelForm.updateLabelForm("label",this.el$.fieldId,label, "data") 
+						})
+					} else {
+						this.labelForm.updateLabelForm("label",this.el$.fieldId,null,  this.labelCustomData) 
+					}
+				}
 			},
 			immediate: true,
 			deep: true

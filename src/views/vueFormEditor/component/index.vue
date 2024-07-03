@@ -48,7 +48,7 @@ export default {
         const props= pickDefinedProps(this, propNames)
 		this.editor = new JSONEditor({
 			target: this.$refs["editor"],
-            props
+            props,
 		})
         // const contentEditor= this.editor.get()
 		// this.editor.update({...contentEditor,...content})

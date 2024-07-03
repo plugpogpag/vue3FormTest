@@ -36,7 +36,7 @@
 						/>
 						<component
 							:is="tag"
-							v-html="titleValue"
+							v-html="labelCustom"
 							v-bind="attrs"
 							v-else
 							@click="editModeElementText"
@@ -72,7 +72,7 @@
 </template>
 
 <script>
-import { ref, inject, watch } from "vue"
+import { ref, inject, watch, computed } from "vue"
 import { defineElement, StaticElement } from "@vueform/vueform"
 import { StaticElement as EditorElementTemplate } from "@vueform/vueform/dist/vueform"
 import { NInput } from "naive-ui"
@@ -87,6 +87,7 @@ export default defineElement({
 	setup(props, context) {
 		const el$ = inject("el$")
 		const update = inject("update")
+		const labelForm = inject("labelForm")
 		const titleValue = ref(props.content)
 		const isLoading = ref(false)
 		const element = StaticElement.setup(props, context)
@@ -96,6 +97,17 @@ export default defineElement({
 			titleValue.value = value
 			isLoading.value = true
 			updateLabelValue(value)
+		}
+		function extractLabels(text) {
+			const regex = /\[\[\s*(.*?)\s*\]\]/g
+			const matches = []
+			let match
+
+			while ((match = regex.exec(text)) !== null) {
+				matches.push(match[1]) // Capture the name inside the brackets
+			}
+
+			return matches
 		}
 		const updateLabelValue = debounce(value => {
 			titleValue.value = value
@@ -116,9 +128,41 @@ export default defineElement({
 			props,
 			() => {
 				titleValue.value = props.content
+				const labels = extractLabels(props.content)
+				console.log("labels", labels)
+				if (props.content) {
+					if (labels.length > 0) {
+						labels.map(label => {
+							labelForm.updateLabelForm("content", el$.value.fieldId, label, "data")
+						})
+					} else {
+						labelForm.updateLabelForm("content", el$.value.fieldId, null, props.content)
+					}
+				}
 			},
 			{ immediate: true, deep: true }
 		)
+		const labelCustom = computed({
+			get() {
+				if (!titleValue.value) {
+					return titleValue.value
+				} else {
+					const labels = extractLabels(titleValue.value)
+					if (labels.length > 0) {
+						const labelArray = labels?.map(label => {
+							if (label) {
+								return labelForm.LabelFormValue.value.json[`${el$.value.fieldId}.content.${label}`] || ""
+							}
+						})
+						return labelArray.join("")
+					}
+					return titleValue.value
+				}
+			},
+			set(value) {
+				titleValue.value = value
+			}
+		})
 		function inputBlurHandle() {
 			active.value = false
 		}
@@ -131,7 +175,8 @@ export default defineElement({
 			editModeElementText,
 			inputTextElement,
 			inputBlurHandle,
-			isLoading
+			isLoading,
+			labelCustom
 		}
 	}
 })

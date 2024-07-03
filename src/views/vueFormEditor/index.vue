@@ -1,20 +1,20 @@
 <template>
-	<div class="grid grid-cols-3 gap-4">
-		<n-flex class="col-span-3" justify="end">
+	<div class="flex grid-cols-2 gap-4 flex-wrap">
+		<n-flex class="w-full" justify="end">
 			<!-- <n-button type="info" @click="onLoad">Load</n-button> -->
 			<n-button type="success" @click="onSave">Save</n-button>
 		</n-flex>
-		<div class="col-span-2">
+		<div style="flex: 0.6 1 0%;">
 			<n-card title="หน้าแสดงผล">
 				<template #header-extra>
 					<NButton type="success" @click="setExampleJsonData">Example Data</NButton>
 				</template>
-				<div class="h-[80vh] overflow-scroll pb-6">
-					<Vueform v-bind="content.json"  v-model="valueForm.json" sync @update:modelValue="updateData" />
+				<div class="h-[1200px] overflow-scroll pb-6">
+					<Vueform v-bind="content.json" v-model="valueForm.json" sync @update:modelValue="updateData" />
 				</div>
 			</n-card>
 		</div>
-		<div class="col-span-1 gap-4 grid">
+		<div class="gap-4 grid " style="flex: 0.4 1 0%;">
 			<n-card title="รายการ Form">
 				<template #header-extra>
 					<NButton type="success" @click="isDownloadJson = true">Export Json</NButton>
@@ -83,6 +83,19 @@
 					</n-card>
 				</n-modal>
 			</n-card>
+			<n-card title="รายการ Label Form">
+				<template #header-extra>
+					<NButton type="success" @click="isDownloadJson = true">Export Json</NButton>
+				</template>
+				<VueJSONEditor
+					:content="LabelForm"
+					:onChange="onChangeLabelForm"
+					:readOnly="readOnly"
+					:mode="modeEditor"
+					class="h-[300px]"
+					:onChangeMode="onChangeMode"
+				/>
+			</n-card>
 		</div>
 	</div>
 </template>
@@ -92,6 +105,7 @@ import VueJSONEditor from "./component/index.vue"
 import moment from "moment"
 import _ from "lodash"
 import { NCard, NButton, NModal, NInput, NFlex } from "naive-ui"
+import { computed } from "vue"
 export default {
 	name: "App",
 	components: {
@@ -115,7 +129,7 @@ export default {
 				schema: {
 					text: {
 						type: "text",
-						label: "เวลาบันทึก :",
+						label: "[[label]][[kuy]]:",
 						columns: {
 							lg: {
 								container: 12
@@ -2558,6 +2572,10 @@ export default {
 			valueForm: {
 				json: {},
 				text: undefined
+			},
+			LabelForm: {
+				json: {},
+				text: undefined
 			}
 		}
 	},
@@ -2575,7 +2593,6 @@ export default {
 		},
 		updateData: function (formData) {
 			this.setNewValueUpdateDataEditor(formData)
-			
 		},
 		onChange: function (content) {
 			const cloneContent = _.cloneDeep(this.content)
@@ -2612,7 +2629,6 @@ export default {
 			}
 		},
 		onChangeMode: function (mode) {
-		
 			this.modeEditor = mode
 		},
 		dotNotationToArray: function (path) {
@@ -2684,11 +2700,49 @@ export default {
 			if (data) {
 				this.setNewValueContentEditor({ ...JSON.parse(data || undefined) })
 			}
+		},
+		setNewValueUpdateLabelEditor: function (value) {
+			const cloneContent = _.cloneDeep(this.LabelForm)
+			const mergeContent = { ...cloneContent, json: { ...cloneContent.json, ...value } }
+			const json = mergeContent.json
+			//convert json to jsonString
+			const text = JSON.stringify(json, null, 2)
+			this.LabelForm = { ...cloneContent, json, text }
+		},
+		addLabelFormElement: function (target, key, keySpecify, value) {
+			if (value) {
+				// if (this.LabelForm.json[`${key}.${target}.${keySpecify}`]) {
+				// 	return this.LabelForm.json[`${key}.${target}.${keySpecify}`] = value
+				// }
+				if (keySpecify) {
+					return this.setNewValueUpdateLabelEditor({ [`${key}.${target}.${keySpecify}`]: value })
+				}
+				return this.setNewValueUpdateLabelEditor({ [`${key}.${target}`]: value })
+			}
+			//
+		},
+		onChangeLabelForm: function (content) {
+			const cloneContent = _.cloneDeep(this.LabelForm)
+			let json, text
+			switch (this.modeEditor) {
+				case "tree":
+					json = content.json || undefined
+					//convert json to jsonString
+					text = JSON.stringify(json, null, 2)
+					this.LabelForm = { ...cloneContent, json, text }
+					break
+				case "text":
+					text = content.text || undefined
+					json = JSON.parse(text)
+					this.LabelForm = { ...cloneContent, json, text }
+					break
+			}
 		}
 	},
 	provide() {
 		return {
-			update: { updateValue: this.updateValue }
+			update: { updateValue: this.updateValue },
+			labelForm: { updateLabelForm: this.addLabelFormElement, LabelFormValue: computed(() => this.LabelForm) }
 		}
 	}
 }
