@@ -44,6 +44,13 @@ export default {
 		...ElementLabel.components,
 		NInput
 	},
+	props: {
+		...ElementLabel.props,
+		referenceName: {
+			type: String,
+			default: ""
+		}
+	},
 	name: "ElementLabel",
 	inject: ["update", "el$", "labelForm"],
 	data() {
@@ -68,16 +75,14 @@ export default {
 				if (!this.labelCustomData) {
 					return this.labelCustomData
 				} else {
-					const labels = this.extractLabels(this.labelCustomData)
-					if (labels.length > 0) {
-						const labelArray = labels?.map(label => {
-							if (label) {
-								return this.labelForm.LabelFormValue.value.json[`${this.el$.fieldId}.label.${label}`] || ""
-							}
-						})
-						return labelArray.join("")
-					}
-					return this.labelCustomData
+					// const labels = this.extractLabels(this.labelCustomData)
+					const labelCustomData = this.labelCustomData
+					const result = labelCustomData.replace(/\[\[(.*?)\]\]/g, (match, p1) => {
+						return this.labelForm.LabelFormValue.value.json[`${this.el$.name}.${p1}`] !== undefined
+							? this.labelForm.LabelFormValue.value.json[`${this.el$.name}.${p1}`]
+							: match
+					})
+					return result
 				}
 			},
 			set(value) {
@@ -126,15 +131,28 @@ export default {
 				if (this.labelCustomData) {
 					if (labels.length > 0) {
 						labels.map(label => {
-							this.labelForm.updateLabelForm("label",this.el$.fieldId,label, "data") 
+							this.labelForm.updateLabelForm(
+								"label",
+								this.el$.name,
+								label,
+								`ใส่ ${label} ของ ${this.el$.name} ที่นี่`
+							)
 						})
 					} else {
-						this.labelForm.updateLabelForm("label",this.el$.fieldId,null,  this.labelCustomData) 
+						this.labelForm.updateLabelForm("label", this.el$.name, null, this.labelCustomData)
 					}
 				}
 			},
 			immediate: true,
 			deep: true
+		},
+		referenceName: {
+			handler(val) {
+				if (val) {
+					console.log(val)
+				}
+			},
+			immediate: true
 		}
 	},
 	setup(props, context) {

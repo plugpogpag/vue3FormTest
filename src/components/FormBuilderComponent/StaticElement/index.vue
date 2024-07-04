@@ -78,8 +78,16 @@ import { StaticElement as EditorElementTemplate } from "@vueform/vueform/dist/vu
 import { NInput } from "naive-ui"
 import { debounce } from "lodash"
 export default defineElement({
+
 	...StaticElement, // adding props, mixins, emits
 	...EditorElementTemplate, // adding data, computed, methods
+	props: {
+		...StaticElement.props,
+		referenceName: {
+			type: String,
+			default: ""
+		}
+	},
 	components: {
 		...StaticElement.components,
 		NInput
@@ -127,16 +135,18 @@ export default defineElement({
 		watch(
 			props,
 			() => {
+				if(props.referenceName) {
+					console.log(props.referenceName)
+				}
 				titleValue.value = props.content
 				const labels = extractLabels(props.content)
-				console.log("labels", labels)
 				if (props.content) {
 					if (labels.length > 0) {
 						labels.map(label => {
-							labelForm.updateLabelForm("content", el$.value.fieldId, label, "data")
+							labelForm.updateLabelForm("content",el$.value.name, label,  "[[]]")
 						})
 					} else {
-						labelForm.updateLabelForm("content", el$.value.fieldId, null, props.content)
+						labelForm.updateLabelForm("content",el$.value.name, null, props.content)
 					}
 				}
 			},

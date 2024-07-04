@@ -129,7 +129,7 @@ export default {
 				schema: {
 					text: {
 						type: "text",
-						label: "[[label]][[kuy]]:",
+						label: "เวลาบันทึก :",
 						columns: {
 							lg: {
 								container: 12
@@ -2715,7 +2715,7 @@ export default {
 				// 	return this.LabelForm.json[`${key}.${target}.${keySpecify}`] = value
 				// }
 				if (keySpecify) {
-					return this.setNewValueUpdateLabelEditor({ [`${key}.${target}.${keySpecify}`]: value })
+					return this.setNewValueUpdateLabelEditor({ [`${key}.${keySpecify}`]: value })
 				}
 				return this.setNewValueUpdateLabelEditor({ [`${key}.${target}`]: value })
 			}
