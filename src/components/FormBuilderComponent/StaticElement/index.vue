@@ -1,5 +1,5 @@
 <template>
-	<component v-if="wrap" :is="elementLayout" ref="container">
+	<component v-if="wrap" :is="elementLayout" ref="container" v-bind="{ ...props }">
 		<template #element>
 			<!-- If content is HTML -->
 			<template v-if="isHtml && (resolvedContent || ['img', 'hr'].indexOf(tag) !== -1)">
@@ -64,7 +64,7 @@
 
 	<div v-else-if="content && isHtml" :class="classes.content" v-html="resolvedContent"></div>
 
-	<component v-else-if="content" :is="componentContent" ref="container" />
+	<component v-else-if="content" :is="componentContent" ref="container" v-bind="{ ...props }" />
 
 	<div v-else :class="classes.container" ref="container">
 		<slot :el$="el$"><component :is="slotContent" :el$="el$" /></slot>
@@ -78,7 +78,6 @@ import { StaticElement as EditorElementTemplate } from "@vueform/vueform/dist/vu
 import { NInput } from "naive-ui"
 import { debounce } from "lodash"
 export default defineElement({
-
 	...StaticElement, // adding props, mixins, emits
 	...EditorElementTemplate, // adding data, computed, methods
 	props: {
@@ -135,18 +134,18 @@ export default defineElement({
 		watch(
 			props,
 			() => {
-				if(props.referenceName) {
-					console.log(props.referenceName)
-				}
 				titleValue.value = props.content
 				const labels = extractLabels(props.content)
 				if (props.content) {
 					if (labels.length > 0) {
 						labels.map(label => {
-							labelForm.updateLabelForm("content",el$.value.name, label,  "[[]]")
+							if (props.referenceName) {
+								return labelForm.updateLabelForm("content", props.referenceName, label, "[[]]")
+							}
+							return labelForm.updateLabelForm("content", el$.value.name, label, "[[]]")
 						})
 					} else {
-						labelForm.updateLabelForm("content",el$.value.name, null, props.content)
+						return labelForm.updateLabelForm("content", el$.value.name, null, props.content)
 					}
 				}
 			},
@@ -157,16 +156,17 @@ export default defineElement({
 				if (!titleValue.value) {
 					return titleValue.value
 				} else {
-					const labels = extractLabels(titleValue.value)
-					if (labels.length > 0) {
-						const labelArray = labels?.map(label => {
-							if (label) {
-								return labelForm.LabelFormValue.value.json[`${el$.value.fieldId}.content.${label}`] || ""
-							}
-						})
-						return labelArray.join("")
-					}
-					return titleValue.value
+					const result = titleValue.value.replace(/\[\[(.*?)\]\]/g, (match, p1) => {
+						if (props.referenceName) {
+							return labelForm.LabelFormValue.value.json[`${props.referenceName}.${p1}`] !== undefined
+								? labelForm.LabelFormValue.value.json[`${props.referenceName}.${p1}`]
+								: match
+						}
+						return labelForm.LabelFormValue.value.json[`${el$.value.name}.${p1}`] !== undefined
+							? labelForm.LabelFormValue.value.json[`${el$.value.name}.${p1}`]
+							: match
+					})
+					return result
 				}
 			},
 			set(value) {
@@ -178,7 +178,7 @@ export default defineElement({
 		}
 		return {
 			...element,
-			...defaultClasses,
+			defaultClasses,
 			titleValue,
 			updateInput,
 			active,

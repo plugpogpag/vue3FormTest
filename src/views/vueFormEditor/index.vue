@@ -3,18 +3,19 @@
 		<n-flex class="w-full" justify="end">
 			<!-- <n-button type="info" @click="onLoad">Load</n-button> -->
 			<n-button type="success" @click="onSave">Save</n-button>
+			<n-button type="success" @click="submitForm">submit</n-button>
 		</n-flex>
-		<div style="flex: 0.6 1 0%;">
+		<div style="flex: 0.6 1 0%">
 			<n-card title="หน้าแสดงผล">
 				<template #header-extra>
 					<NButton type="success" @click="setExampleJsonData">Example Data</NButton>
 				</template>
 				<div class="h-[1200px] overflow-scroll pb-6">
-					<Vueform v-bind="content.json" v-model="valueForm.json" sync @update:modelValue="updateData" />
+					<Vueform v-bind="content.json" v-model="valueForm.json" sync @update:modelValue="updateData" ref="vueFormRef" :display-errors="false"/>
 				</div>
 			</n-card>
 		</div>
-		<div class="gap-4 grid " style="flex: 0.4 1 0%;">
+		<div class="gap-4 grid" style="flex: 0.4 1 0%">
 			<n-card title="รายการ Form">
 				<template #header-extra>
 					<NButton type="success" @click="isDownloadJson = true">Export Json</NButton>
@@ -135,7 +136,8 @@ export default {
 								container: 12
 							}
 						},
-						disabled: true
+						disabled: true,
+						rules: "required"
 					},
 					container2: {
 						type: "group",
@@ -2737,6 +2739,10 @@ export default {
 					this.LabelForm = { ...cloneContent, json, text }
 					break
 			}
+		},
+		submitForm:function(e){
+			e.preventDefault()
+			this.$refs.vueFormRef.validate()
 		}
 	},
 	provide() {

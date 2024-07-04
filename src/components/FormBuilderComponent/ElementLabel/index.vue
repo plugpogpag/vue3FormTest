@@ -78,6 +78,11 @@ export default {
 					// const labels = this.extractLabels(this.labelCustomData)
 					const labelCustomData = this.labelCustomData
 					const result = labelCustomData.replace(/\[\[(.*?)\]\]/g, (match, p1) => {
+						if(this.referenceName){
+							return this.labelForm.LabelFormValue.value.json[`${this.referenceName}.${p1}`] !== undefined
+							? this.labelForm.LabelFormValue.value.json[`${this.referenceName}.${p1}`]
+							: match
+						}
 						return this.labelForm.LabelFormValue.value.json[`${this.el$.name}.${p1}`] !== undefined
 							? this.labelForm.LabelFormValue.value.json[`${this.el$.name}.${p1}`]
 							: match
@@ -87,6 +92,11 @@ export default {
 			},
 			set(value) {
 				this.labelCustomData = value
+			}
+		},
+		watchMultipleValue: {
+			get() {
+				return { label: this.label, referenceName: this.referenceName }
 			}
 		}
 	},
@@ -122,21 +132,25 @@ export default {
 			return matches
 		}
 	},
+
 	watch: {
-		label: {
+		watchMultipleValue: {
 			handler(val) {
-				this.labelCustomData = val
+				this.labelCustomData = val.label
 				// if this.labelCustomData is have data and value this.labelCustomData is [[test]] or [[test]][[test2]][[test3]] show array of all bucket array
 				const labels = this.extractLabels(this.labelCustomData)
 				if (this.labelCustomData) {
 					if (labels.length > 0) {
 						labels.map(label => {
-							this.labelForm.updateLabelForm(
+							if(val.referenceName){
+								this.labelForm.updateLabelForm(
 								"label",
-								this.el$.name,
+								val.referenceName,
 								label,
 								`ใส่ ${label} ของ ${this.el$.name} ที่นี่`
 							)
+							}
+						
 						})
 					} else {
 						this.labelForm.updateLabelForm("label", this.el$.name, null, this.labelCustomData)
@@ -146,15 +160,9 @@ export default {
 			immediate: true,
 			deep: true
 		},
-		referenceName: {
-			handler(val) {
-				if (val) {
-					console.log(val)
-				}
-			},
-			immediate: true
-		}
+	
 	},
+	
 	setup(props, context) {
 		const element = ElementLabel.setup(props, context)
 		const inputTextElement = ref(null)
