@@ -1,5 +1,5 @@
 <template>
-    <component :is="elementLayout" :multiple="true" ref="container"  v-bind="{...props}">
+    <component :is="elementLayout" :multiple="true" ref="container"  v-bind="{...$props,parentName:props?.name}">
       <template #element>
         <div :class="classes.wrapper" role="group" :aria-labelledby="labelId">
           <slot>
@@ -14,7 +14,7 @@
       </template>
   
       <!-- Default element slots -->
-      <template v-for="(component, slot) in elementSlots" #[slot]><slot :name="slot" :el$="el$"><component :is="component" :el$="el$"/></slot></template>
+      <template v-for="(component, slot) in elementSlots" #[slot]><slot :name="slot" :el$="el$"><component :is="component" :el$="el$" v-bind="{...$props,parentName:props?.name}" /></slot></template>
       </component>
   </template>
 

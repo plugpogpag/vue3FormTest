@@ -4,14 +4,23 @@
 			<!-- <n-button type="info" @click="onLoad">Load</n-button> -->
 			<n-button type="success" @click="onSave">Save</n-button>
 			<n-button type="success" @click="submitForm">submit</n-button>
+			<n-button type="success" @click="this.$refs.vueFormRef.resetValidators()">clear</n-button>
 		</n-flex>
 		<div style="flex: 0.6 1 0%">
 			<n-card title="หน้าแสดงผล">
 				<template #header-extra>
 					<NButton type="success" @click="setExampleJsonData">Example Data</NButton>
 				</template>
-				<div class="h-[1200px] overflow-scroll pb-6">
-					<Vueform v-bind="content.json" v-model="valueForm.json" sync @update:modelValue="updateData" ref="vueFormRef" :display-errors="false"/>
+				<div class="h-[1200px] overflow-scroll pb-28">
+					<Vueform
+						v-bind="content.json"
+						v-model="valueForm.json"
+						sync
+						@update:modelValue="updateData"
+						ref="vueFormRef"
+						:display-errors="false"
+						:debounce="500"
+					/>
 				</div>
 			</n-card>
 		</div>
@@ -107,6 +116,7 @@ import moment from "moment"
 import _ from "lodash"
 import { NCard, NButton, NModal, NInput, NFlex } from "naive-ui"
 import { computed } from "vue"
+import { debounce } from "lodash"
 export default {
 	name: "App",
 	components: {
@@ -137,7 +147,6 @@ export default {
 							}
 						},
 						disabled: true,
-						rules: "required"
 					},
 					container2: {
 						type: "group",
@@ -309,7 +318,9 @@ export default {
 											p_2: {
 												type: "static",
 												tag: "p",
-												content: "Limit switch :"
+												content: "Limit switch :",
+												label:"test",
+												referenceName:"test"
 											}
 										}
 									},
@@ -2596,6 +2607,11 @@ export default {
 		updateData: function (formData) {
 			this.setNewValueUpdateDataEditor(formData)
 		},
+		delaySave: debounce(function (functionCallBack) {
+			// this.update.updateValue("label", this.el$.fieldId, value)
+			// this.isLoading = false
+			functionCallBack()
+		}, 500),
 		onChange: function (content) {
 			const cloneContent = _.cloneDeep(this.content)
 			let json, text
@@ -2636,13 +2652,14 @@ export default {
 		dotNotationToArray: function (path) {
 			return path.split(".")
 		},
-		update: function (targetKey, obj, path, newLabel) {
+		update: function (targetKey, obj, path, newValue) {
 			const [firstPath, ...otherPath] = path
 			if (otherPath.length > 0) {
-				obj[firstPath].schema = this.update(targetKey, obj[firstPath].schema, otherPath, newLabel)
+				obj[firstPath].schema = this.update(targetKey, obj[firstPath].schema, otherPath, newValue)
 				return obj
 			} else {
-				obj[firstPath][targetKey] = newLabel
+				const addObject = targetKey ? { [targetKey]: newValue } : { ...newValue }
+				obj[firstPath] = { ...obj[firstPath], ...addObject }
 				return obj
 			}
 		},
@@ -2653,8 +2670,10 @@ export default {
 			//convert json to jsonString
 			const text = JSON.stringify(json, null, 2)
 			this.content = { ...cloneContent, json, text }
+			console.log(this.content)
 		},
 		updateValue: function (targetL, key, value) {
+			console.log({targetL, key, value})
 			const pathArray = this.dotNotationToArray(key)
 			const cloneContent = _.cloneDeep(this.content)
 			const updateDataForm = this.update(targetL, cloneContent.json.schema, pathArray, value)
@@ -2740,7 +2759,7 @@ export default {
 					break
 			}
 		},
-		submitForm:function(e){
+		submitForm: function (e) {
 			e.preventDefault()
 			this.$refs.vueFormRef.validate()
 		}

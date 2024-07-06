@@ -1,0 +1,130 @@
+<template>
+	<component :is="elementLayout" ref="container" v-bind="{ referenceName:props?.referenceName,parentName:props?.name }">
+		<template #element>
+			<div :class="classes.wrapper" :aria-labelledby="labelId" role="group" class="relative">
+				<div class="top-[-4px] right-0 absolute z-10" v-if="!isDisabled &&  isDevMode">
+					<n-icon class="text-sm cursor-pointer" :color="formValue.rules?'#dc2626':'#ffffff'" @click="isModalRequired = true">
+						<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 16 16">
+							<path
+								fill-rule="evenodd"
+								clip-rule="evenodd"
+								d="M4 0a4 4 0 00-4 4v8a4 4 0 004 4h8a4 4 0 004-4V4a4 4 0 00-4-4H4zm0 4.75A.75.75 0 014.75 4h6.5a.75.75 0 010 1.5h-6.5A.75.75 0 014 4.75zm9.78 5.72a.75.75 0 010 1.06l-2.25 2.25a.75.75 0 01-1.06 0l-1.25-1.25a.75.75 0 111.06-1.06l.72.72 1.72-1.72a.75.75 0 011.06 0zM4 8a.75.75 0 01.75-.75h6.5a.75.75 0 010 1.5h-6.5A.75.75 0 014 8zm0 3.25a.75.75 0 01.75-.75h2.5a.75.75 0 010 1.5h-2.5a.75.75 0 01-.75-.75z"
+							/>
+						</svg>
+					</n-icon>
+					<n-modal v-model:show="isModalRequired">
+				<n-card
+					style="width: 450px"
+					title="required"
+					:bordered="false"
+					size="huge"
+					role="dialog"
+					aria-modal="true"
+				>
+					<n-form>
+						<n-form-item label="Required">
+							<n-switch v-model:value="formValue.rules" checked-value="required" unchecked-value="" />
+						</n-form-item>
+						<n-form-item label="Message">
+							<n-input v-model:value="formValue.messages.required" />
+						</n-form-item>
+					</n-form>
+					<n-button type="primary" @click="onSubmitForm">OK</n-button>
+				</n-card>
+			</n-modal>
+				</div>
+				<CheckboxgroupCheckbox
+					v-for="(item, index, key) in resolvedOptions"
+					:items="resolvedOptions"
+					:index="index"
+					:item="item"
+					:value="item.value"
+					:key="key"
+					:attrs="aria"
+				>
+					<template #default="scope">
+						<slot name="checkbox" v-bind="scope" :el$="el$">
+							<component :is="fieldSlots.checkbox" v-bind="scope" :el$="el$" />
+						</slot>
+					</template>
+				</CheckboxgroupCheckbox>
+			</div>
+			
+		</template>
+
+		<!-- Default element slots -->
+		<template v-for="(component, slot) in elementSlots" #[slot]>
+			<slot :name="slot" :el$="el$"><component :is="component" :el$="el$" /></slot>
+		</template>
+	</component>
+</template>
+  <script>
+import { defineElement, CheckboxgroupElement } from "@vueform/vueform"
+import { CheckboxgroupElement as EditorElementTemplate } from "@vueform/vueform/dist/vueform"
+import { ref, reactive, inject, watch } from "vue"
+import { NIcon, NModal, NCard, NForm, NFormItem, NButton, NSwitch, NInput } from "naive-ui"
+export default defineElement({
+	...CheckboxgroupElement, // adding props, mixins, emits
+	...EditorElementTemplate,
+	props: {
+		...CheckboxgroupElement.props,
+		referenceName: {
+			type: String,
+			default: ""
+		}
+	},
+	components: {
+		...CheckboxgroupElement.components,
+		NIcon,
+		NModal,
+		NCard,
+		NForm,
+		NFormItem,
+		NButton,
+		NSwitch,
+		NInput
+	},
+	setup(props, context) {
+		const defaultClasses = ref({
+			...EditorElementTemplate.data().defaultClasses
+		})
+		const element = CheckboxgroupElement.setup(props, context)
+		const update = inject("update")
+		const el$ = inject("el$")
+		const isModalRequired = ref(false)
+		const DEFAULT_VALUE = {
+			rules: "required",
+			messages: {
+				required: "required"
+			}
+		}
+		const formValue = reactive(DEFAULT_VALUE)
+		watch(
+			props,
+			() => {
+				const { rules, messages } = props
+				Object.assign(formValue, { rules, messages })
+			},
+			{ deep: true, immediate: true }
+		)
+		function onSubmitForm(e) {
+			e.preventDefault()
+			const key = [el$?.value?.fieldId || "", props.name].filter(Boolean).join(".")
+			update.updateValue("", key, formValue)
+			isModalRequired.value = false
+		}
+		const isDevMode = import.meta.env.VITE_DEV_MODE
+		return {
+			...element,
+			defaultClasses,
+			props,
+			isModalRequired,
+			onSubmitForm,
+			formValue,
+			isDevMode
+		}
+	}
+})
+</script>
+  <style lang="scss">
+</style>

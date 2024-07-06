@@ -1,19 +1,24 @@
 <template>
-	<component :is="elementLayout" ref="container" v-bind="{ ...props }">
+	<component :is="elementLayout" ref="container" v-bind="{ referenceName:props?.referenceName,parentName:props?.name }">
 		<template #element>
-			<div :class="classes.inputContainer" class="relative">
-				<ElementAddon v-if="hasAddonBefore" type="before">
-					<slot name="addon-before"><component :is="fieldSlots['addon-before']" :el$="el$" /></slot>
-				</ElementAddon>
-				<ElementAddon v-if="hasAddonAfter" type="after">
-					<slot name="addon-after"><component :is="fieldSlots['addon-after']" :el$="el$" /></slot>
-				</ElementAddon>
-				<ElementLabelFloating v-if="hasFloating && !empty" :visible="!empty" />
-				<ElementLoader v-if="isLoading" />
-				<!-- add tailwind class  absolute x center and right -20px-->
-
-				<!-- <div class="top-0 right-0 absolute z-10" v-if="!isDisabled">
-					<n-icon class="text-sm cursor-pointer" color="#dc2626 " @click="isModalRequired = true">
+			<div :class="classes.wrapper" :aria-labelledby="labelId" role="radiogroup" class="relative">
+				<RadiogroupRadio
+					v-for="(item, index, key) in resolvedOptions"
+					:items="resolvedOptions"
+					:index="index"
+					:item="item"
+					:value="item.value"
+					:key="key"
+					:attrs="aria"
+				>
+					<template #default="scope">
+						<slot name="radio" v-bind="scope" :el$="el$">
+							<component :is="fieldSlots.radio" v-bind="scope" :el$="el$" />
+						</slot>
+					</template>
+				</RadiogroupRadio>
+				<div class="top-[-4px] right-0 absolute z-10" v-if="!isDisabled && isDevMode">
+					<n-icon class="text-sm cursor-pointer" :color="formValue.rules?'#dc2626':'#ffffff'" @click="isModalRequired = true">
 						<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 16 16">
 							<path
 								fill-rule="evenodd"
@@ -22,32 +27,10 @@
 							/>
 						</svg>
 					</n-icon>
-				</div> -->
-
-				<input
-					:value="model"
-					:type="inputType"
-					:name="name"
-					:id="fieldId"
-					:class="classes.input"
-					:placeholder="Placeholder"
-					:autocomplete="autocomplete"
-					:disabled="isDisabled"
-					:readonly="readonly"
-					v-bind="{
-						...attrs,
-						...aria
-					}"
-					@keydown="handleKeydown"
-					@keyup="handleKeyup"
-					@keypress="handleKeypress"
-					@input="handleInput"
-					@select="handleInput"
-					@blur="handleBlur"
-					ref="input"
-				/>
+				</div>
 			</div>
-			<!-- <n-modal v-model:show="isModalRequired">
+
+			<n-modal v-model:show="isModalRequired">
 				<n-card
 					style="width: 450px"
 					title="required"
@@ -58,7 +41,7 @@
 				>
 					<n-form>
 						<n-form-item label="Required">
-							<n-switch v-model:value="formValue.required" />
+							<n-switch v-model:value="formValue.rules" checked-value="required" unchecked-value="" />
 						</n-form-item>
 						<n-form-item label="Message">
 							<n-input v-model:value="formValue.messages.required" />
@@ -66,34 +49,34 @@
 					</n-form>
 					<n-button type="primary" @click="onSubmitForm">OK</n-button>
 				</n-card>
-			</n-modal> -->
+			</n-modal>
 		</template>
+
 		<!-- Default element slots -->
 		<template v-for="(component, slot) in elementSlots" #[slot]>
-			<slot :name="slot" :el$="el$">
-				<component :is="component" :el$="el$" />
-			</slot>
+			<slot :name="slot" :el$="el$"><component :is="component" :el$="el$" /></slot>
 		</template>
 	</component>
 </template>
   
   <script>
-import { defineElement, TextElement } from "@vueform/vueform"
-import { TextElement as EditorElementTemplate } from "@vueform/vueform/dist/vueform"
-import { ref, reactive } from "vue"
+import { defineElement, RadiogroupElement } from "@vueform/vueform"
+import { RadiogroupElement as EditorElementTemplate } from "@vueform/vueform/dist/vueform"
+import { ref, reactive, inject, watch } from "vue"
 import { NIcon, NModal, NCard, NForm, NFormItem, NButton, NSwitch, NInput } from "naive-ui"
 export default defineElement({
-	...TextElement, // adding props, mixins, emits
+	...RadiogroupElement,
 	...EditorElementTemplate,
+	name: "RadiogroupElement",
 	props: {
-		...TextElement.props,
+		...RadiogroupElement.props,
 		referenceName: {
 			type: String,
 			default: ""
 		}
 	},
 	components: {
-		...TextElement.components,
+		...RadiogroupElement.components,
 		NIcon,
 		NModal,
 		NCard,
@@ -107,29 +90,42 @@ export default defineElement({
 		const defaultClasses = ref({
 			...EditorElementTemplate.data().defaultClasses
 		})
-		const element = TextElement.setup(props, context)
+		const element = RadiogroupElement.setup(props, context)
+		const update = inject("update")
+		const el$ = inject("el$")
 		const isModalRequired = ref(false)
 		const DEFAULT_VALUE = {
-			required: false,
+			rules: "required",
 			messages: {
 				required: "required"
 			}
 		}
 		const formValue = reactive(DEFAULT_VALUE)
+		watch(
+			props,
+			() => {
+				const { rules, messages } = props
+				Object.assign(formValue, { rules, messages })
+			},
+			{ deep: true, immediate: true }
+		)
 		function onSubmitForm(e) {
 			e.preventDefault()
-			console.log(formValue)
-			Object.assign(formValue, DEFAULT_VALUE)
+			const key = [el$?.value?.fieldId || "", props.name].filter(Boolean).join(".")
+			update.updateValue("", key, formValue)
 			isModalRequired.value = false
 		}
+		const isDevMode = import.meta.env.VITE_DEV_MODE
 		return {
 			...element,
 			defaultClasses,
 			props,
 			isModalRequired,
 			onSubmitForm,
-			formValue
+			formValue,
+			isDevMode
 		}
 	}
 })
 </script>
+  
