@@ -30,7 +30,7 @@
 					<NButton type="success" @click="isDownloadJson = true">Export Json</NButton>
 				</template>
 				<VueJSONEditor
-					:content="content"
+					:content="contentDelay"
 					:onChange="onChange"
 					:readOnly="readOnly"
 					class="h-[300px]"
@@ -132,6 +132,10 @@ export default {
 			showEditor: true,
 			readOnly: false,
 			content: {
+				json: {},
+				text: undefined
+			},
+			contentDelay: {
 				json: {},
 				text: undefined
 			},
@@ -2607,12 +2611,7 @@ export default {
 		updateData: function (formData) {
 			this.setNewValueUpdateDataEditor(formData)
 		},
-		delaySave: debounce(function (functionCallBack) {
-			// this.update.updateValue("label", this.el$.fieldId, value)
-			// this.isLoading = false
-			functionCallBack()
-		}, 500),
-		onChange: function (content) {
+		delaySave: debounce(function (content) {
 			const cloneContent = _.cloneDeep(this.content)
 			let json, text
 			switch (this.modeEditor) {
@@ -2628,6 +2627,10 @@ export default {
 					this.content = { ...cloneContent, json, text }
 					break
 			}
+		}, 2000),
+		onChange: function (content) {
+			this.contentDelay = content
+			this.delaySave(content)
 		},
 		onChangeValueForm: function (content) {
 			const cloneContent = _.cloneDeep(this.valueForm)
@@ -2670,10 +2673,8 @@ export default {
 			//convert json to jsonString
 			const text = JSON.stringify(json, null, 2)
 			this.content = { ...cloneContent, json, text }
-			console.log(this.content)
 		},
 		updateValue: function (targetL, key, value) {
-			console.log({targetL, key, value})
 			const pathArray = this.dotNotationToArray(key)
 			const cloneContent = _.cloneDeep(this.content)
 			const updateDataForm = this.update(targetL, cloneContent.json.schema, pathArray, value)
@@ -2732,9 +2733,6 @@ export default {
 		},
 		addLabelFormElement: function (target, key, keySpecify, value) {
 			if (value) {
-				// if (this.LabelForm.json[`${key}.${target}.${keySpecify}`]) {
-				// 	return this.LabelForm.json[`${key}.${target}.${keySpecify}`] = value
-				// }
 				if (keySpecify) {
 					return this.setNewValueUpdateLabelEditor({ [`${key}.${keySpecify}`]: value })
 				}
@@ -2768,6 +2766,16 @@ export default {
 		return {
 			update: { updateValue: this.updateValue },
 			labelForm: { updateLabelForm: this.addLabelFormElement, LabelFormValue: computed(() => this.LabelForm) }
+		}
+	},
+	watch: {
+		content: {
+			handler(val) {
+				const cloneContent = _.cloneDeep(this.contentDelay)
+				this.contentDelay = {...cloneContent, json: val.json, text: val.text}
+			},
+			immediate: true,
+			deep: true
 		}
 	}
 }

@@ -78,7 +78,7 @@
   <script>
 import { defineElement, CheckboxElement } from "@vueform/vueform"
 import { CheckboxElement as EditorElementTemplate } from "@vueform/vueform/dist/vueform"
-import { ref, reactive, inject } from "vue"
+import { ref, reactive, inject ,watch} from "vue"
 import { NIcon, NModal, NCard, NForm, NFormItem, NButton, NSwitch, NInput } from "naive-ui"
 export default defineElement({
 	...CheckboxElement, // adding props, mixins, emits
