@@ -113,7 +113,7 @@
 <script>
 import VueJSONEditor from "./component/index.vue"
 import moment from "moment"
-import _ from "lodash"
+import _, { reduce } from "lodash"
 import { NCard, NButton, NModal, NInput, NFlex } from "naive-ui"
 import { computed } from "vue"
 import { debounce } from "lodash"
@@ -150,7 +150,7 @@ export default {
 								container: 12
 							}
 						},
-						disabled: true,
+						disabled: true
 					},
 					container2: {
 						type: "group",
@@ -323,8 +323,8 @@ export default {
 												type: "static",
 												tag: "p",
 												content: "Limit switch :",
-												label:"test",
-												referenceName:"test"
+												label: "test",
+												referenceName: "test"
 											}
 										}
 									},
@@ -2653,14 +2653,40 @@ export default {
 			this.modeEditor = mode
 		},
 		dotNotationToArray: function (path) {
-			return path.split(".")
+			const strArray = path.split(".")
+			const convertArrayNoNumber = reduce(
+				strArray,
+				(acc, value) => {
+					const isNumber = !isNaN(value)
+					if (!isNumber) {
+						acc.push(value)
+					}
+					return acc
+				},
+				[]
+			)
+			return convertArrayNoNumber
 		},
 		update: function (targetKey, obj, path, newValue) {
+			
 			const [firstPath, ...otherPath] = path
 			if (otherPath.length > 0) {
-				obj[firstPath].schema = this.update(targetKey, obj[firstPath].schema, otherPath, newValue)
+				const covertObjToArrayKey = Object.keys(obj[firstPath] || {})
+				const isKeySchema = covertObjToArrayKey.includes("schema")
+				const isKeyElement = covertObjToArrayKey.includes("element")
+				if (isKeySchema) {
+					obj[firstPath].schema = this.update(targetKey, obj[firstPath].schema, otherPath, newValue)
+				} else if (isKeyElement) {
+					obj[firstPath].element.schema = this.update(targetKey, obj[firstPath].element.schema, otherPath, newValue)
+				} 
+
 				return obj
 			} else {
+				console.log({ targetKey, obj, path, newValue })
+				// if(!isNaN(firstPath)){
+				// 	console.log({targetKey, obj, path, newValue})
+				// 	return
+				// }
 				const addObject = targetKey ? { [targetKey]: newValue } : { ...newValue }
 				obj[firstPath] = { ...obj[firstPath], ...addObject }
 				return obj
@@ -2772,7 +2798,7 @@ export default {
 		content: {
 			handler(val) {
 				const cloneContent = _.cloneDeep(this.contentDelay)
-				this.contentDelay = {...cloneContent, json: val.json, text: val.text}
+				this.contentDelay = { ...cloneContent, json: val.json, text: val.text }
 			},
 			immediate: true,
 			deep: true
