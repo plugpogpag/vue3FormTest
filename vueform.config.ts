@@ -8,14 +8,15 @@ import '@vueform/vueform/dist/vueform.css';
 import CheckboxElement from './src/components/FormBuilderComponent/component/CheckboxElement/index.vue'
 import CheckboxgroupElement from './src/components/FormBuilderComponent/component/CheckboxgroupElement/index.vue'
 import ElementLabel from './src/components/FormBuilderComponent/component/ElementLabel/index.vue'
-import RadioElement from './src/components/FormBuilderComponent/component/RadioElement/index.vue'
 import ElementLayout from './src/components/FormBuilderComponent/component/ElementLayout/index.vue'
+import GroupElement from './src/components/FormBuilderComponent/component/GroupElement/index.vue'
+import ListElement from './src/components/FormBuilderComponent/component/ListElement/index.vue'
+import RadioElement from './src/components/FormBuilderComponent/component/RadioElement/index.vue'
 import RadiogroupElement from './src/components/FormBuilderComponent/component/RadiogroupElement/index.vue'
 import SelectElement from './src/components/FormBuilderComponent/component/SelectElement/index.vue'
 import StaticElement from './src/components/FormBuilderComponent/component/StaticElement/index.vue'
 import TextareaElement from './src/components/FormBuilderComponent/component/TextareaElement/index.vue'
 import TextElement from './src/components/FormBuilderComponent/component/TextElement/index.vue'
-import GroupElement from './src/components/FormBuilderComponent/component/GroupElement/index.vue'
 
 //no use in production
 import CheckboxgroupElementTemplate from './src/components/FormBuilderComponent/template/CheckboxgroupElement/index.vue'
@@ -35,6 +36,7 @@ export default defineConfig({
     ElementLabel,
     ElementLayout,
     GroupElement,
+    ListElement,
     RadioElement,
     RadiogroupElement,
     SelectElement,
