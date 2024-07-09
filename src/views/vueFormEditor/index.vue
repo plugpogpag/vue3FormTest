@@ -27,7 +27,11 @@
 		<div class="gap-4 grid" style="flex: 0.4 1 0%">
 			<n-card title="รายการ Form">
 				<template #header-extra>
-					<NButton type="success" @click="isDownloadJson = true">Export Json</NButton>
+					<div class="flex gap-4 "> 
+						<NButton type="success" @click="isDownloadJson = true">Export Json</NButton>
+						<NButton type="success" @click="saveChangeToForm">Save Change</NButton>
+					</div>
+			
 				</template>
 				<VueJSONEditor
 					:content="contentDelay"
@@ -2639,7 +2643,7 @@ export default {
 		}, 2000),
 		onChange: function (content) {
 			this.contentDelay = content
-			this.delaySave(content)
+			
 		},
 		onChangeValueForm: function (content) {
 			const cloneContent = _.cloneDeep(this.valueForm)
@@ -2799,6 +2803,10 @@ export default {
 		submitForm: function (e) {
 			e.preventDefault()
 			this.$refs.vueFormRef.validate()
+		},
+		saveChangeToForm:function(e){
+			const cloneContentDelay = _.cloneDeep(this.contentDelay)
+			this.delaySave(cloneContentDelay)
 		}
 	},
 	provide() {
