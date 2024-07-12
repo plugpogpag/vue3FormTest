@@ -125,18 +125,18 @@ export default {
 			get() {
 				const result = this.label?.replace(/\[\[(.*?)\]\]/g, (match, p1) => {
 					if (
-						this.labelForm?.LabelFormValue?.value?.json[`${this?.el$?.name}.${p1}`] &&
-						this.labelForm?.LabelFormValue?.value?.json
+						this.labelForm?.LabelFormValue?.value
 					) {
-						const check = /\[\[(.*?)\]\]/.test(
-							this.labelForm.LabelFormValue.value.json[`${this.el$.name}.${p1}`]
-						)
-						if (check) {
-							return this.replaceListTextWithObject(
-								this.labelForm.LabelFormValue.value.json[`${this.el$.name}.${p1}`],
-								this.labelForm.LabelFormValue.value.json
-							)
-						} else return this.labelForm.LabelFormValue.value.json[`${this.el$.name}.${p1}`]
+						if (this.referenceNameValue) {
+							return this.labelForm.LabelFormValue.value[`${this.referenceNameValue}.${p1}`]
+								? this.labelForm.LabelFormValue.value[`${this.referenceNameValue}.${p1}`]
+								: match
+						}
+						else{
+							return this.labelForm.LabelFormValue.value[`${this.el$.name}.${p1}`]
+								? this.labelForm.LabelFormValue.value[`${this.el$.name}.${p1}`]
+								: match
+						}
 					}
 					return match
 				})
@@ -177,20 +177,6 @@ export default {
 			this.update.updateValue("", this.el$.fieldId, { referenceName: this.referenceNameValue })
 			this.isModalReferenceName = false
 		},
-		replaceListTextWithObject(keyName, object) {
-			const result = keyName.replace(/\[\[(.*?)\]\]/g, (match, p1) => {
-				const check = /\[\[(.*?)\]\]/.test(object[`${this.el$.name}.${p1}`])
-				if (check) {
-					return replaceListTextWithObject(match, object)
-				} else {
-					if (this.referenceName) {
-						return object[`${this.referenceName}.${p1}`] ? object[`${this.referenceName}.${p1}`] : match
-					}
-					return object[`${this.el$.name}.${p1}`] ? object[`${this.el$.name}.${p1}`] : match
-				}
-			})
-			return result
-		}
 	},
 	watch: {
 		watchMultipleValue: {

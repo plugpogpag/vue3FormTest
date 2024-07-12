@@ -99,10 +99,13 @@
 			</n-card>
 			<n-card title="รายการ Label Form">
 				<template #header-extra>
-					<NButton type="success" @click="isDownloadJson = true">Export Json</NButton>
+					<div class="flex gap-4 ">
+						<NButton type="success" @click="isDownloadJson = true">Export Json</NButton>
+						<NButton type="success" @click="saveChangeLabelForm">Save Change</NButton>
+				 	</div>
 				</template>
 				<VueJSONEditor
-					:content="LabelForm"
+					:content="LabelFormDelay"
 					:onChange="onChangeLabelForm"
 					:readOnly="readOnly"
 					:mode="modeEditor"
@@ -2606,6 +2609,10 @@ export default {
 			LabelForm: {
 				json: {},
 				text: undefined
+			},
+			LabelFormDelay: {
+				json: {},
+				text: undefined
 			}
 		}
 	},
@@ -2638,6 +2645,23 @@ export default {
 					text = content.text || undefined
 					json = JSON.parse(text)
 					this.content = { ...cloneContent, json, text }
+					break
+			}
+		}, 2000),
+		delaySaveLabel: debounce(function (content) {
+			const cloneContent = _.cloneDeep(this.LabelForm)
+			let json, text
+			switch (this.modeEditor) {
+				case "tree":
+					json = content.json || undefined
+					//convert json to jsonString
+					text = JSON.stringify(json, null, 2)
+					this.LabelForm = { ...cloneContent, json, text }
+					break
+				case "text":
+					text = content.text || undefined
+					json = JSON.parse(text)
+					this.LabelForm = { ...cloneContent, json, text }
 					break
 			}
 		}, 2000),
@@ -2699,11 +2723,6 @@ export default {
 
 				return obj
 			} else {
-				console.log({ targetKey, obj, path, newValue })
-				// if(!isNaN(firstPath)){
-				// 	console.log({targetKey, obj, path, newValue})
-				// 	return
-				// }
 				const addObject = targetKey ? { [targetKey]: newValue } : { ...newValue }
 				obj[firstPath] = { ...obj[firstPath], ...addObject }
 				return obj
@@ -2784,21 +2803,7 @@ export default {
 			//
 		},
 		onChangeLabelForm: function (content) {
-			const cloneContent = _.cloneDeep(this.LabelForm)
-			let json, text
-			switch (this.modeEditor) {
-				case "tree":
-					json = content.json || undefined
-					//convert json to jsonString
-					text = JSON.stringify(json, null, 2)
-					this.LabelForm = { ...cloneContent, json, text }
-					break
-				case "text":
-					text = content.text || undefined
-					json = JSON.parse(text)
-					this.LabelForm = { ...cloneContent, json, text }
-					break
-			}
+			this.LabelFormDelay = content
 		},
 		submitForm: function (e) {
 			e.preventDefault()
@@ -2807,12 +2812,16 @@ export default {
 		saveChangeToForm:function(e){
 			const cloneContentDelay = _.cloneDeep(this.contentDelay)
 			this.delaySave(cloneContentDelay)
+		},
+		saveChangeLabelForm:function(e){
+			const cloneLabelFormDelay = _.cloneDeep(this.LabelFormDelay)
+			this.delaySaveLabel(cloneLabelFormDelay)
 		}
 	},
 	provide() {
 		return {
 			update: { updateValue: this.updateValue },
-			labelForm: { updateLabelForm: this.addLabelFormElement, LabelFormValue: computed(() => this.LabelForm) }
+			labelForm: { updateLabelForm: this.addLabelFormElement, LabelFormValue: computed(() => this.LabelForm?.json) }
 		}
 	},
 	watch: {

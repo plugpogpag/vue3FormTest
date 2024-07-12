@@ -212,34 +212,22 @@ export default defineElement({
 			},
 			{ immediate: true, deep: true }
 		)
-		function replaceListTextWithObject(keyName, object) {
-			const result = keyName.replace(/\[\[(.*?)\]\]/g, (match, p1) => {
-				const check = /\[\[(.*?)\]\]/.test(object[`${props.name}.${p1}`])
-				if (check) {
-					return replaceListTextWithObject(match, object)
-				} else {
-					if (props.referenceName) {
-						return object[`${props.referenceName}.${p1}`] ? object[`${props.referenceName}.${p1}`] : match
-					}
-					return object[`${props.name}.${p1}`] ? object[`${props.name}.${p1}`] : match
-				}
-			})
-			return result
-		}
 		const labelCustom = computed({
 			get() {
 				const result = props.content.replace(/\[\[(.*?)\]\]/g, (match, p1) => {
 					if (
-						labelForm?.LabelFormValue?.value?.json[`${props.name}.${p1}`] &&
-						labelForm?.LabelFormValue?.value?.json
+						labelForm?.LabelFormValue?.value
 					) {
-						const check = /\[\[(.*?)\]\]/.test(labelForm.LabelFormValue.value.json[`${props.name}.${p1}`])
-						if (check) {
-							return replaceListTextWithObject(
-								labelForm.LabelFormValue.value.json[`${props.name}.${p1}`],
-								labelForm.LabelFormValue.value.json
-							)
-						} else return labelForm.LabelFormValue.value.json[`${props.name}.${p1}`]
+						if (props.referenceName) {
+							return this.labelForm.LabelFormValue.value[`${props.referenceName}.${p1}`]
+								? this.labelForm.LabelFormValue.value[`${props.referenceName}.${p1}`]
+								: match
+						}
+						else{
+							return this.labelForm.LabelFormValue.value[`${props.name}.${p1}`]
+								? this.labelForm.LabelFormValue.value[`${props.name}.${p1}`]
+								: match
+						}
 					}
 					return match
 				})
