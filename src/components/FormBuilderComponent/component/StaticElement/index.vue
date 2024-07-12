@@ -46,31 +46,38 @@
 									v-bind="attrs"
 									@click="editModeElementText"
 								></component>
-								<n-icon
-									class="text-sm cursor-pointer"
-									:color="referenceName ? '#63e2b7' : '#ffffff'"
-									@click="isModalReferenceName = true"
-								>
-									<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 32 32" id="icon">
-										<title>notebook--reference</title>
-										<polygon
-											points="4 20 4 22 7.586 22 2 27.586 3.414 29 9 23.414 9 27 11 27 11 20 4 20"
-										/>
-										<rect x="19" y="10" width="7" height="2" />
-										<rect x="19" y="15" width="7" height="2" />
-										<rect x="19" y="20" width="7" height="2" />
-										<path
-											d="M28,5H4A2.002,2.002,0,0,0,2,7V17H4V7H15V27H28a2.002,2.002,0,0,0,2-2V7A2.002,2.002,0,0,0,28,5ZM17,25V7H28l.0015,18Z"
-										/>
-										<rect
-											id="_Transparent_Rectangle_"
-											data-name="&lt;Transparent Rectangle&gt;"
-											fill="none"
-											width="32"
-											height="32"
-										/>
-									</svg>
-								</n-icon>
+								<n-tooltip trigger="hover">
+									<template #trigger>
+										<n-icon
+											class="text-sm cursor-pointer"
+											:color="referenceName ? '#63e2b7' : '#ffffff'"
+											@click="isModalReferenceName = true"
+										>
+											<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 32 32" id="icon">
+												<title>notebook--reference</title>
+												<polygon
+													points="4 20 4 22 7.586 22 2 27.586 3.414 29 9 23.414 9 27 11 27 11 20 4 20"
+												/>
+												<rect x="19" y="10" width="7" height="2" />
+												<rect x="19" y="15" width="7" height="2" />
+												<rect x="19" y="20" width="7" height="2" />
+												<path
+													d="M28,5H4A2.002,2.002,0,0,0,2,7V17H4V7H15V27H28a2.002,2.002,0,0,0,2-2V7A2.002,2.002,0,0,0,28,5ZM17,25V7H28l.0015,18Z"
+												/>
+												<rect
+													id="_Transparent_Rectangle_"
+													data-name="&lt;Transparent Rectangle&gt;"
+													fill="none"
+													width="32"
+													height="32"
+												/>
+											</svg>
+										</n-icon>
+									</template>
+									<span v-if="referenceName">{{ referenceName }}</span>
+									<span v-else>{{ name }}</span>
+								</n-tooltip>
+
 								<n-modal v-model:show="isModalReferenceName">
 									<n-card
 										style="width: 450px"
@@ -152,7 +159,7 @@
 import { ref, inject, watch, computed, onMounted } from "vue"
 import { defineElement, StaticElement } from "@vueform/vueform"
 import { StaticElement as EditorElementTemplate } from "@vueform/vueform/dist/vueform"
-import { NInput, NIcon, NModal, NCard, NButton } from "naive-ui"
+import { NInput, NIcon, NModal, NCard, NButton, NTooltip } from "naive-ui"
 import { debounce } from "lodash"
 export default defineElement({
 	...StaticElement, // adding props, mixins, emits
@@ -170,7 +177,8 @@ export default defineElement({
 		NIcon,
 		NModal,
 		NCard,
-		NButton
+		NButton,
+		NTooltip
 	},
 	setup(props, context) {
 		const isDevMode = import.meta.env.VITE_DEV_MODE
@@ -215,15 +223,12 @@ export default defineElement({
 		const labelCustom = computed({
 			get() {
 				const result = props.content.replace(/\[\[(.*?)\]\]/g, (match, p1) => {
-					if (
-						labelForm?.LabelFormValue?.value
-					) {
+					if (labelForm?.LabelFormValue?.value) {
 						if (props.referenceName) {
 							return this.labelForm.LabelFormValue.value[`${props.referenceName}.${p1}`]
 								? this.labelForm.LabelFormValue.value[`${props.referenceName}.${p1}`]
 								: match
-						}
-						else{
+						} else {
 							return this.labelForm.LabelFormValue.value[`${props.name}.${p1}`]
 								? this.labelForm.LabelFormValue.value[`${props.name}.${p1}`]
 								: match

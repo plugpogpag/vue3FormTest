@@ -20,29 +20,35 @@
 			/>
 			<div v-else class="flex justify-center items-center gap-2">
 				<span :class="classes.wrapper" v-html="labelCustom" @click="editModeElementText"></span>
-				<n-icon
-					class="text-sm cursor-pointer"
-					:color="referenceName ? '#63e2b7' : '#ffffff'"
-					@click="isModalReferenceName = true"
-				>
-					<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 32 32" id="icon">
-						<title>notebook--reference</title>
-						<polygon points="4 20 4 22 7.586 22 2 27.586 3.414 29 9 23.414 9 27 11 27 11 20 4 20" />
-						<rect x="19" y="10" width="7" height="2" />
-						<rect x="19" y="15" width="7" height="2" />
-						<rect x="19" y="20" width="7" height="2" />
-						<path
-							d="M28,5H4A2.002,2.002,0,0,0,2,7V17H4V7H15V27H28a2.002,2.002,0,0,0,2-2V7A2.002,2.002,0,0,0,28,5ZM17,25V7H28l.0015,18Z"
-						/>
-						<rect
-							id="_Transparent_Rectangle_"
-							data-name="&lt;Transparent Rectangle&gt;"
-							fill="none"
-							width="32"
-							height="32"
-						/>
-					</svg>
-				</n-icon>
+				<n-tooltip trigger="hover">
+					<template #trigger>
+						<n-icon
+							class="text-sm cursor-pointer"
+							:color="referenceName ? '#63e2b7' : '#ffffff'"
+							@click="isModalReferenceName = true"
+						>
+							<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 32 32" id="icon">
+								<title>notebook--reference</title>
+								<polygon points="4 20 4 22 7.586 22 2 27.586 3.414 29 9 23.414 9 27 11 27 11 20 4 20" />
+								<rect x="19" y="10" width="7" height="2" />
+								<rect x="19" y="15" width="7" height="2" />
+								<rect x="19" y="20" width="7" height="2" />
+								<path
+									d="M28,5H4A2.002,2.002,0,0,0,2,7V17H4V7H15V27H28a2.002,2.002,0,0,0,2-2V7A2.002,2.002,0,0,0,28,5ZM17,25V7H28l.0015,18Z"
+								/>
+								<rect
+									id="_Transparent_Rectangle_"
+									data-name="&lt;Transparent Rectangle&gt;"
+									fill="none"
+									width="32"
+									height="32"
+								/>
+							</svg>
+						</n-icon>
+					</template>
+					<span v-if="referenceName">{{ referenceName }}</span>
+					<span v-else>{{ el$.fieldId }}</span>
+				</n-tooltip>
 			</div>
 			<n-modal v-model:show="isModalReferenceName">
 				<n-card
@@ -78,7 +84,7 @@
 <script>
 import { ElementLabel } from "@vueform/vueform"
 import { ElementLabel as EditorElementTemplate } from "@vueform/vueform/dist/vueform"
-import { NInput, NIcon, NModal, NCard, NButton } from "naive-ui"
+import { NInput, NIcon, NModal, NCard, NButton, NTooltip } from "naive-ui"
 import { debounce } from "lodash"
 import { ref, watch } from "vue"
 export default {
@@ -90,7 +96,8 @@ export default {
 		NIcon,
 		NModal,
 		NCard,
-		NButton
+		NButton,
+		NTooltip
 	},
 	props: {
 		...ElementLabel.props,
@@ -124,15 +131,12 @@ export default {
 		labelCustom: {
 			get() {
 				const result = this.label?.replace(/\[\[(.*?)\]\]/g, (match, p1) => {
-					if (
-						this.labelForm?.LabelFormValue?.value
-					) {
+					if (this.labelForm?.LabelFormValue?.value) {
 						if (this.referenceNameValue) {
 							return this.labelForm.LabelFormValue.value[`${this.referenceNameValue}.${p1}`]
 								? this.labelForm.LabelFormValue.value[`${this.referenceNameValue}.${p1}`]
 								: match
-						}
-						else{
+						} else {
 							return this.labelForm.LabelFormValue.value[`${this.el$.name}.${p1}`]
 								? this.labelForm.LabelFormValue.value[`${this.el$.name}.${p1}`]
 								: match
@@ -176,7 +180,7 @@ export default {
 			e.preventDefault()
 			this.update.updateValue("", this.el$.fieldId, { referenceName: this.referenceNameValue })
 			this.isModalReferenceName = false
-		},
+		}
 	},
 	watch: {
 		watchMultipleValue: {
