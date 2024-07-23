@@ -40,13 +40,6 @@
 							aria-modal="true"
 						>
 							<n-form>
-								<n-form-item label="Required">
-									<n-switch
-										v-model:value="formValue.rules"
-										checked-value="required"
-										unchecked-value=""
-									/>
-								</n-form-item>
 								<n-form-item label="Select Input Type ">
 									<n-radio-group v-model:value="formValue.inputType" name="radiogroup">
 										<n-space>
@@ -58,6 +51,13 @@
 											/>
 										</n-space>
 									</n-radio-group>
+								</n-form-item>
+								<n-form-item label="Required">
+									<n-switch
+										v-model:value="formValue.rules"
+										checked-value="required"
+										unchecked-value=""
+									/>
 								</n-form-item>
 								<n-form-item label="Message">
 									<n-input v-model:value="formValue.messages.required" />
