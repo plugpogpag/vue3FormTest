@@ -47,6 +47,18 @@
 										unchecked-value=""
 									/>
 								</n-form-item>
+								<n-form-item label="Select Input Type ">
+									<n-radio-group v-model:value="formValue.inputType" name="radiogroup">
+										<n-space>
+											<n-radio
+												v-for="song in listTypeInputText"
+												:key="song.value"
+												:value="song.value"
+												:label="song.label"
+											/>
+										</n-space>
+									</n-radio-group>
+								</n-form-item>
 								<n-form-item label="Message">
 									<n-input v-model:value="formValue.messages.required" />
 								</n-form-item>
@@ -93,7 +105,7 @@
 import { defineElement, TextElement } from "@vueform/vueform"
 import { TextElement as EditorElementTemplate } from "@vueform/vueform/dist/vueform"
 import { ref, reactive, inject, watch } from "vue"
-import { NIcon, NModal, NCard, NForm, NFormItem, NButton, NSwitch, NInput } from "naive-ui"
+import { NIcon, NModal, NCard, NForm, NFormItem, NButton, NSwitch, NInput ,NRadioGroup,NRadio,NSpace} from "naive-ui"
 export default defineElement({
 	...TextElement, // adding props, mixins, emits
 	...EditorElementTemplate,
@@ -113,7 +125,10 @@ export default defineElement({
 		NFormItem,
 		NButton,
 		NSwitch,
-		NInput
+		NInput,
+		NRadioGroup,
+		NRadio,
+		NSpace
 	},
 	setup(props, context) {
 		const isDevMode = import.meta.env.VITE_DEV_MODE
@@ -128,14 +143,15 @@ export default defineElement({
 			rules: "required",
 			messages: {
 				required: "required"
-			}
+			},
+			inputType: null
 		}
 		const formValue = reactive(DEFAULT_VALUE)
 		watch(
 			props,
 			() => {
-				const { rules, messages } = props
-				Object.assign(formValue, { rules, messages })
+				const { rules, messages,inputType } = props
+				Object.assign(formValue, { rules, messages, inputType})
 			},
 			{ deep: true, immediate: true }
 		)
@@ -145,7 +161,10 @@ export default defineElement({
 			update.updateValue("", key, formValue)
 			isModalRequired.value = false
 		}
-
+		const listTypeInputText = [
+			{ value: "text", label: "Text" },
+			{ value: "number", label: "Number" }
+		]
 		return {
 			...element,
 			defaultClasses,
@@ -153,7 +172,8 @@ export default defineElement({
 			isModalRequired,
 			onSubmitForm,
 			formValue,
-			isDevMode
+			isDevMode,
+			listTypeInputText,
 		}
 	}
 })
