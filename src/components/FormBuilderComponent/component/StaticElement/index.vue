@@ -225,12 +225,12 @@ export default defineElement({
 				const result = props.content.replace(/\[\[(.*?)\]\]/g, (match, p1) => {
 					if (labelForm?.LabelFormValue?.value) {
 						if (props.referenceName) {
-							return this.labelForm.LabelFormValue.value[`${props.referenceName}.${p1}`]
-								? this.labelForm.LabelFormValue.value[`${props.referenceName}.${p1}`]
+							return labelForm?.LabelFormValue.value[`${props.referenceName}.${p1}`] || false
+								? labelForm?.LabelFormValue.value[`${props.referenceName}.${p1}`]
 								: match
 						} else {
-							return this.labelForm.LabelFormValue.value[`${props.name}.${p1}`]
-								? this.labelForm.LabelFormValue.value[`${props.name}.${p1}`]
+							return labelForm?.LabelFormValue.value[`${props.name}.${p1}`] || false
+								? labelForm?.LabelFormValue.value[`${props.name}.${p1}`]
 								: match
 						}
 					}
