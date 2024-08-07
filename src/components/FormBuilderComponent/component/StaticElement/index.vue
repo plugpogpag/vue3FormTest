@@ -222,6 +222,7 @@ export default defineElement({
 		)
 		const labelCustom = computed({
 			get() {
+				///test
 				const result = props.content.replace(/\[\[(.*?)\]\]/g, (match, p1) => {
 					if (labelForm?.LabelFormValue?.value) {
 						if (props.referenceName) {
